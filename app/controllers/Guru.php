@@ -336,6 +336,11 @@ class Guru extends Controller
 
     public function logout()
     {
+
+        // ==================== TAMBAHKAN LOG DI SINI ====================
+        $nama_logout = $_SESSION['nama_guru'] ?? 'Guru';
+        $this->logActivity('LOGOUT', "User $nama_logout telah keluar dari aplikasi.");
+        // ===============================================================
         // Hapus session guru
         unset($_SESSION['login_guru']);
         unset($_SESSION['data_guru']);

@@ -35,11 +35,11 @@ $current_page = $url_segments[1] ?: 'dashboard';
                 </li>
 
                 <?php if (Auth::checkRole('admin') || Auth::checkRole('waka') || Auth::checkRole('kajur')) : ?>
-
                     <li class="sidebar-item <?= ($current_page == 'jurusan') ? 'active' : '' ?>">
                         <a href="<?= BASEURL; ?>/jurusan" class='sidebar-link'><i class="bi bi-mortarboard-fill"></i><span>Data Jurusan</span></a>
                     </li>
                 <?php endif; ?>
+
                 <?php if (Auth::checkRole('admin')) : ?>
                     <li class="sidebar-item <?= ($current_page == 'guru' && !in_array(($url_segments[2] ?? ''), ['profil', 'editProfil'])) ? 'active' : '' ?>">
                         <a href="<?= BASEURL; ?>/guru/daftar" class='sidebar-link'>
@@ -50,7 +50,15 @@ $current_page = $url_segments[1] ?: 'dashboard';
                     <li class="sidebar-item <?= ($current_page == 'profil') ? 'active' : '' ?>">
                         <a href="<?= BASEURL; ?>/profil" class='sidebar-link'><i class="bi bi-person-circle"></i><span>Profil Sekolah</span></a>
                     </li>
+
+                    <li class="sidebar-item <?= ($current_page == 'log') ? 'active' : '' ?>">
+                        <a href="<?= BASEURL; ?>/log" class='sidebar-link'>
+                            <i class="bi bi-clock-history"></i>
+                            <span>Activity Log</span>
+                        </a>
+                    </li>
                 <?php endif; ?>
+
                 <?php if (Auth::checkRole('admin') || Auth::checkRole('waka')) : ?>
                     <li class="sidebar-title">Mutasi</li>
                     <li class="sidebar-item <?= ($current_page == 'mutasi' && !in_array(($url_segments[2] ?? ''), ['profil', 'editProfil'])) ? 'active' : '' ?>">
@@ -69,8 +77,6 @@ $current_page = $url_segments[1] ?: 'dashboard';
                         <span>Profil Saya</span>
                     </a>
                 </li>
-
-
 
                 <li class="sidebar-item">
                     <a href="<?= BASEURL; ?>/guru/logout" class='sidebar-link'>
