@@ -95,10 +95,22 @@ class Mutasi extends Controller
                 ];
                 $this->siswaModel->tambahDataMutasiMasuk($newSiswaId, $dataMutasi);
 
+                // ==================== TAMBAHKAN LOG DI SINI ====================
+                // Asumsi di dalam form $_POST terdapat input 'nama_siswa'
+                $nama_siswa = $_POST['nama_siswa'] ?? 'Siswa Baru';
+                $asal_sekolah = $_POST['asal_sekolah'] ?? '-';
+
+                $this->logActivity('CREATE', "Mencatat data siswa mutasi masuk: {$nama_siswa} (Asal Sekolah: {$asal_sekolah}).");
+                // ===============================================================
+
                 Flasher::setFlash('Siswa Mutasi Masuk', 'berhasil ditambahkan', 'success');
                 header('Location: ' . BASEURL . '/mutasi/daftarMasuk');
                 exit;
             } catch (Exception $e) {
+                // ==================== TAMBAHKAN LOG WARNING ====================
+                $this->logActivity('WARNING', "Siswa berhasil diinput, tapi log mutasi masuk gagal dicatat untuk ID Siswa {$newSiswaId}.");
+                // ===============================================================
+
                 Flasher::setFlash('Siswa berhasil dibuat,', 'tapi log mutasi gagal dicatat: ' . $e->getMessage(), 'warning');
                 header('Location: ' . BASEURL . '/mutasi/masuk');
                 exit;
@@ -153,18 +165,36 @@ class Mutasi extends Controller
         $pesanSukses = '';
         $redirectUrl = BASEURL . '/mutasi/keluar'; // Default redirect jika gagal
 
+        // --- Opsional: Ambil nama siswa untuk deskripsi log yang lebih jelas ---
+        // (Asumsi Anda punya method getSiswaById di model siswa, jika tidak, hapus 2 baris ini 
+        // dan ganti variabel $nama_siswa menjadi "ID $id_siswa" saja)
+        $dataSiswa = $this->siswaModel->getSiswaById($id_siswa);
+        $nama_siswa = $dataSiswa ? $dataSiswa['nama_siswa'] : "ID $id_siswa";
+
         try {
             if ($jenis_aksi == 'keluar') {
                 if ($this->siswaModel->mutasiKeluar($id_siswa, $dataForm) > 0) {
                     $berhasil = true;
                     $pesanSukses = 'Siswa telah diproses mutasi keluar.';
                     $redirectUrl = BASEURL . '/mutasi/daftarKeluar';
+
+                    // ==================== TAMBAHKAN LOG DI SINI ====================
+                    // Mengambil data sekolah tujuan dari form jika ada
+                    $tujuan = $dataForm['sekolah_tujuan'] ?? 'Tidak dicantumkan';
+                    $this->logActivity('UPDATE', "Memproses mutasi keluar untuk siswa: {$nama_siswa} (Tujuan: {$tujuan}).");
+                    // ===============================================================
                 }
             } elseif ($jenis_aksi == 'undur_diri') {
                 if ($this->siswaModel->mengundurkanDiri($id_siswa, $dataForm) > 0) {
                     $berhasil = true;
                     $pesanSukses = 'Siswa telah dicatat mengundurkan diri.';
                     $redirectUrl = BASEURL . '/mutasi/daftarMengundurkanDiri';
+
+                    // ==================== TAMBAHKAN LOG DI SINI ====================
+                    // Mengambil data alasan dari form jika ada
+                    $alasan = $dataForm['alasan'] ?? 'Tidak disebutkan';
+                    $this->logActivity('UPDATE', "Mencatat status mengundurkan diri untuk siswa: {$nama_siswa} (Alasan: {$alasan}).");
+                    // ===============================================================
                 }
             } else {
                 throw new Exception("Jenis aksi tidak valid.");
@@ -225,6 +255,13 @@ class Mutasi extends Controller
         }
 
         if ($this->siswaModel->updateMutasiKeluar($_POST) > 0) {
+
+            // ==================== TAMBAHKAN LOG DI SINI ====================
+            // Coba ambil ID Mutasi atau ID Siswa dari form hidden input untuk kejelasan log
+            $id_referensi = $_POST['id_mutasi'] ?? $_POST['id_siswa'] ?? 'Tidak diketahui';
+            $this->logActivity('UPDATE', "Memperbarui detail data mutasi keluar (ID Referensi: {$id_referensi}).");
+            // ===============================================================
+
             Flasher::setFlash('Berhasil', 'Data mutasi keluar telah diperbarui.', 'success');
         } else {
             Flasher::setFlash('Gagal', 'Gagal memperbarui data atau tidak ada perubahan.', 'warning');
@@ -233,6 +270,7 @@ class Mutasi extends Controller
         header('Location: ' . BASEURL . '/mutasi/daftarKeluar');
         exit;
     }
+
 
     public function hapusKeluar($id_log)
     {
@@ -286,6 +324,13 @@ class Mutasi extends Controller
         }
 
         if ($this->siswaModel->updateMengundurkanDiri($_POST) > 0) {
+
+            // ==================== TAMBAHKAN LOG DI SINI ====================
+            // Mengambil ID Referensi dari form hidden input untuk kejelasan log
+            $id_referensi = $_POST['id_mutasi'] ?? $_POST['id_siswa'] ?? 'Tidak diketahui';
+            $this->logActivity('UPDATE', "Memperbarui detail data siswa mengundurkan diri/putus sekolah (ID Referensi: {$id_referensi}).");
+            // ===============================================================
+
             Flasher::setFlash('Berhasil', 'Data mengundurkan diri telah diperbarui.', 'success');
         } else {
             Flasher::setFlash('Gagal', 'Gagal memperbarui data atau tidak ada perubahan.', 'warning');

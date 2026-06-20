@@ -321,6 +321,12 @@ class Guru extends Controller
 
             // Panggil method model KHUSUS profil (yang tidak hapus level)
             if ($this->model('Guru_model')->updateProfilSaya($_POST) >= 0) {
+
+                // ==================== TAMBAHKAN LOG DI SINI ====================
+                $nama_guru = $_SESSION['nama_guru'] ?? 'Guru';
+                $this->logActivity('UPDATE', "Guru/Admin bernama {$nama_guru} berhasil memperbarui informasi profil mandiri.");
+                // ===============================================================
+
                 // Flash message sukses
                 Flasher::setFlash('berhasil', 'diupdate', 'success');
             } else {

@@ -177,7 +177,13 @@ class Rombel extends Controller
 
         // 6. Output PDF ke Browser
         // Argumen kedua false agar PDF ditampilkan di browser, bukan langsung di-download
-        $dompdf->stream("Daftar Hadir - " . $data['rombel']->nama_rombel . ".pdf", array("Attachment" => false));
+        $nama_rombel = $data['rombel']->nama_rombel ?? 'Tidak Diketahui';
+
+        // ==================== TAMBAHKAN LOG DI SINI ====================
+        $this->logActivity('PRINT', "Admin menampilkan / mencetak PDF Daftar Hadir untuk Rombel: {$nama_rombel} (ID: {$id}).");
+        // ===============================================================
+
+        $dompdf->stream("Daftar Hadir - " . $nama_rombel . ".pdf", array("Attachment" => false));
         exit();
     }
 
@@ -232,10 +238,13 @@ class Rombel extends Controller
         // Nama file PDF yang akan di-download
         $filename = "Rekap Rombel TP " . str_replace('/', '-', $data['tp']) . ".pdf";
 
+        // ==================== TAMBAHKAN LOG DI SINI ====================
+        $this->logActivity('PRINT', "Admin menampilkan / mencetak PDF Rekapitulasi Seluruh Rombel untuk Tahun Pelajaran: {$data['tp']}.");
+        // ===============================================================
+
         // Output PDF ke browser untuk di-download
-        // 'Attachment' => false akan menampilkan PDF di browser, true akan langsung download
         $dompdf->stream($filename, ["Attachment" => false]);
-        exit(); // Hentikan eksekusi script setelah PDF dikirim
+        exit();
     }
 
     public function exportAnggotaExcel($id)
@@ -356,11 +365,14 @@ class Rombel extends Controller
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
         header('Cache-Control: max-age=0');
 
+        // ==================== TAMBAHKAN LOG DI SINI ====================
+        $this->logActivity('EXPORT', "Admin mengekspor Daftar Alamat Siswa ke Excel (.xlsx) untuk Rombel: {$nama_rombel} (ID: {$id}) TP {$tp}.");
+        // ===============================================================
+
         // 9. Simpan ke Output PHP
         $writer->save('php://output');
         exit;
     }
-
     /**
      * Menangkap request POST Kenaikan Kelas
      */
@@ -372,7 +384,7 @@ class Rombel extends Controller
         error_reporting(E_ALL);
         // --------------------------------------
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $siswaDipilih = $_POST['id_siswa']; // Array dari checkbox
+            $siswaDipilih = $_POST['id_siswa'] ?? []; // Array dari checkbox
             $dariRombel   = $_POST['dari_rombel'];
             $keRombel     = $_POST['ke_rombel'];
 
@@ -383,6 +395,12 @@ class Rombel extends Controller
             if (!$ta) {
                 // Jika error/tidak ditemukan, kembalikan ke halaman sebelumnya
                 Flasher::setFlash('Gagal', 'Tahun ajaran aktif tidak ditemukan di database!', 'danger');
+
+                // ==================== TAMBAHKAN LOG DI SINI ====================
+                // Mencatat kegagalan fatal karena sistem belum memiliki TP aktif
+                $this->logActivity('UPDATE', "Admin gagal memproses kenaikan kelas karena Tahun Pelajaran aktif belum dikonfigurasi di database.");
+                // ===============================================================
+
                 header('Location: ' . BASEURL . '/rombel/kenaikan');
                 exit;
             }
@@ -396,14 +414,25 @@ class Rombel extends Controller
                 exit;
             }
 
+            // Hitung jumlah siswa yang dicentang untuk keperluan statistik log
+            $jumlahSiswa = count($siswaDipilih);
+
             // Eksekusi Model
             $proses = $this->model('Rombel_model')->prosesNaikKelas($siswaDipilih, $dariRombel, $keRombel, $taAktif);
 
+            // ==================== TAMBAHKAN LOG DI SINI ====================
             if ($proses) {
                 Flasher::setFlash('Berhasil', 'Siswa terpilih berhasil dinaikkan kelas.', 'success');
+
+                // Log sukses dengan mencatat volume data dan target rombel
+                $this->logActivity('UPDATE', "Admin berhasil menaikkan kelas sebanyak {$jumlahSiswa} siswa dari Rombel ID: {$dariRombel} ke Rombel ID: {$keRombel} untuk Tahun Pelajaran {$taAktif}.");
             } else {
                 Flasher::setFlash('Gagal', 'Terjadi kesalahan pada sistem saat menaikkan kelas.', 'danger');
+
+                // Log gagal apabila query mengalami kegagalan di tingkat database
+                $this->logActivity('UPDATE', "Admin gagal menaikkan kelas {$jumlahSiswa} siswa dari Rombel ID: {$dariRombel} ke Rombel ID: {$keRombel}. Terjadi kesalahan internal sistem.");
             }
+            // ===============================================================
 
             header('Location: ' . BASEURL . '/rombel');
             exit;
@@ -416,11 +445,24 @@ class Rombel extends Controller
     public function aksiLulus()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $siswaDipilih = $_POST['id_siswa']; // Array dari checkbox
+            $siswaDipilih = $_POST['id_siswa'] ?? []; // Array dari checkbox
             $dariRombel   = $_POST['dari_rombel'];
 
-            // Ambil tahun ajaran aktif
-            $taAktif = $this->model('Rombel_model')->getActiveTahunPelajaran()->tp;
+            // 1. AMBIL DATA TAHUN PELAJARAN DENGAN AMAN
+            $ta = $this->model('Rombel_model')->getActiveTahunPelajaran();
+
+            // Cek apakah tahun ajaran ditemukan untuk mencegah fatal error (property on null)
+            if (!$ta) {
+                Flasher::setFlash('Gagal', 'Tahun ajaran aktif tidak ditemukan di database!', 'danger');
+
+                // Log kegagalan sistem karena konfigurasi TP kosong
+                $this->logActivity('UPDATE', "Admin gagal memproses kelulusan karena Tahun Pelajaran aktif belum dikonfigurasi di database.");
+
+                header('Location: ' . BASEURL . '/rombel/kelulusan');
+                exit;
+            }
+
+            $taAktif = $ta->tp;
 
             if (empty($siswaDipilih)) {
                 Flasher::setFlash('Gagal', 'Tidak ada siswa yang dipilih!', 'danger');
@@ -428,14 +470,25 @@ class Rombel extends Controller
                 exit;
             }
 
+            // Hitung jumlah siswa terpilih untuk keperluan deskripsi log
+            $jumlahSiswa = count($siswaDipilih);
+
             // Eksekusi Model
             $proses = $this->model('Rombel_model')->prosesLulus($siswaDipilih, $dariRombel, $taAktif);
 
+            // ==================== TAMBAHKAN LOG DI SINI ====================
             if ($proses) {
                 Flasher::setFlash('Berhasil', 'Siswa terpilih telah dinyatakan Lulus.', 'success');
+
+                // Log sukses kelulusan massal dengan mencatat jumlah data, ID rombel asal, dan tahun pelajaran
+                $this->logActivity('UPDATE', "Admin berhasil meluluskan sebanyak {$jumlahSiswa} siswa dari Rombel ID: {$dariRombel} pada Tahun Pelajaran {$taAktif}.");
             } else {
                 Flasher::setFlash('Gagal', 'Terjadi kesalahan sistem saat memproses kelulusan.', 'danger');
+
+                // Log gagal apabila query bermasalah di tingkat basis data
+                $this->logActivity('UPDATE', "Admin gagal meluluskan {$jumlahSiswa} siswa dari Rombel ID: {$dariRombel}. Terjadi kesalahan internal database sistem.");
             }
+            // ===============================================================
 
             header('Location: ' . BASEURL . '/rombel');
             exit;

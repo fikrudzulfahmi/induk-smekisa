@@ -126,6 +126,15 @@ class Portal_siswa extends Controller
             // Panggil method updateDataSiswa di model
             // Kita kirimkan $id_induk dan seluruh isi form ($_POST)
             if ($this->model('Siswa_model')->updateDataSiswaPortal($id_induk, $_POST) > 0) {
+
+                // ==================== TAMBAHKAN LOG DI SINI ====================
+                // Mengambil nama siswa dari session agar deskripsi log jelas
+                $nama_siswa = $_SESSION['data_siswa']['nama_siswa'] ?? 'Siswa';
+                $nisn = $_SESSION['data_siswa']['nisn'] ?? '-';
+
+                $this->logActivity('UPDATE', "Siswa bernama {$nama_siswa} (NISN: {$nisn}) berhasil memperbarui data profilnya melalui portal siswa.");
+                // ===============================================================
+
                 // Jika data berhasil diupdate di database
                 // (Sesuaikan dengan sistem Notifikasi/Flasher yang Anda gunakan)
                 $_SESSION['pesan_sukses'] = 'Data berhasil diperbarui!';

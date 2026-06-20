@@ -98,18 +98,27 @@ class Siswa extends Controller
             exit;
         }
 
-        if ($this->model('Siswa_model')->updateDataSiswa($_POST) > 0) {
-            Flasher::setFlash('Data Siswa', 'berhasil diubah', 'success');
+        // Ambil id_induk terlebih dahulu dari data yang disubmit agar bisa dipakai di blok if maupun else
+        $id_siswa = $_POST['id_induk'] ?? null;
 
-            // Ambil id_rombel dari data yang baru saja disubmit
-            $id_siswa = $_POST['id_induk'];
+        if ($this->model('Siswa_model')->updateDataSiswa($_POST) > 0) {
+
+            // ==================== TAMBAHKAN LOG DI SINI ====================
+            // Mengambil nama siswa dari input form jika ada
+            $nama_siswa = $_POST['nama_siswa'] ?? 'Siswa';
+            $nisn = $_POST['nisn'] ?? '-';
+
+            $this->logActivity('UPDATE', "Admin berhasil memperbarui data induk siswa: {$nama_siswa} (NISN: {$nisn}).");
+            // ===============================================================
+
+            Flasher::setFlash('Data Siswa', 'berhasil diubah', 'success');
 
             // Arahkan ke halaman anggota rombel yang sesuai
             header('Location: ' . BASEURL . '/siswa/edit/' . $id_siswa);
             exit;
         } else {
             Flasher::setFlash('Data Siswa', 'gagal diubah', 'error');
-            // Jika gagal, tetap kembali ke daftar siswa utama
+            // Jika gagal, tetap kembali ke halaman edit siswa tersebut
             header('Location: ' . BASEURL . '/siswa/edit/' . $id_siswa);
             exit;
         }
@@ -141,6 +150,15 @@ class Siswa extends Controller
         }
 
         if ($this->model('Siswa_model')->tambahDataSiswa($_POST) > 0) {
+
+            // ==================== TAMBAHKAN LOG DI SINI ====================
+            // Mengambil nama siswa dan NISN dari data POST form yang diinput
+            $nama_siswa = $_POST['nama_siswa'] ?? 'Siswa Baru';
+            $nisn = $_POST['nisn'] ?? '-';
+
+            $this->logActivity('CREATE', "Admin berhasil menambahkan data siswa baru: {$nama_siswa} (NISN: {$nisn}).");
+            // ===============================================================
+
             Flasher::setFlash('Data Siswa', 'berhasil ditambahkan', 'success');
             header('Location: ' . BASEURL . '/siswa');
             exit;
@@ -159,7 +177,7 @@ class Siswa extends Controller
         $this->view('siswa/nominatif_options', $data);
     }
 
-    public function exportNominatif() // <-- REMOVE parameters from here
+    public function exportNominatif()
     {
         // Pastikan request adalah POST
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -304,15 +322,20 @@ class Siswa extends Controller
         $sheet->getColumnDimension('E')->setWidth(50); // Atur lebar alamat manual
         $sheet->getStyle('E1:E' . $rowNum)->getAlignment()->setWrapText(true); // Aktifkan wrap text untuk alamat
 
-
         // 7. Siapkan Output File Excel
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
 
         // Pastikan $tingkat digunakan di nama file
         $filename = 'Nominatif - ' . $jurusan->jurusan . ' - ' . $tingkat . ' - TP ' . str_replace('/', '-', $tp) . '.xlsx';
 
-        // --- PERBAIKAN PENTING DI SINI ---
+        // ==================== TAMBAHKAN LOG DI SINI ====================
+        // Mencatat aktivitas download/export data siswa massal
+        $nama_jurusan = $jurusan->jurusan ?? 'Unknown';
+        $total_siswa = count($siswaList);
+        $this->logActivity('EXPORT', "Mengekspor data Nominatif Siswa (Jurusan: {$nama_jurusan}, Tingkat: {$tingkat}, TP: {$tp}) ke format Excel. Total: {$total_siswa} siswa.");
+        // ===============================================================
 
+        // --- PERBAIKAN PENTING DI SINI ---
         // Bersihkan semua output buffer secara menyeluruh untuk mencegah spasi/error ikut terunduh
         while (ob_get_level() > 0) {
             ob_end_clean();
@@ -420,6 +443,16 @@ class Siswa extends Controller
 
         // 6. Output PDF ke Browser (inline, bukan download)
         $nama_file = "Buku_Induk_" . preg_replace('/[^A_Za-z0-9_\-]/', '_', $siswa_data->nama_siswa) . ".pdf";
+
+        // ==================== TAMBAHKAN LOG DI SINI ====================
+        // Log dicatat tepat sebelum stream dilempar ke browser pengguna
+        $nama_siswa = $siswa_data->nama_siswa ?? 'Siswa';
+        $nisn = $siswa_data->nisn ?? '-';
+        $rombel = $siswa_data->rombel ?? '-';
+
+        $this->logActivity('PRINT', "Mencetak dokumen Buku Induk Siswa: {$nama_siswa} (NISN: {$nisn}, Rombel/Kelas: {$rombel}).");
+        // ===============================================================
+
         // Gunakan Attachment => false agar tampil di browser
         $dompdf->stream($nama_file, array("Attachment" => false));
         exit(); // Hentikan eksekusi
@@ -428,6 +461,7 @@ class Siswa extends Controller
     public function exportExcelLengkap()
     {
         if (!Auth::checkRole('admin')) { /* ... handle akses ditolak ... */
+            exit;
         }
 
         $siswaData = $this->model('Siswa_model')->getAllSiswaLengkap();
@@ -661,6 +695,12 @@ class Siswa extends Controller
         $writer = new Xlsx($spreadsheet);
         $filename = 'data_siswa_lengkap_' . date('YmdHis') . '.xlsx';
 
+        // ==================== TAMBAHKAN LOG DI SINI ====================
+        // Menghitung jumlah data untuk melengkapi informasi log
+        $total_data = count($siswaData);
+        $this->logActivity('EXPORT', "Admin melakukan ekspor seluruh database (Data Siswa Lengkap) ke format Excel. Total: {$total_data} baris data diekspor.");
+        // ===============================================================
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
         header('Cache-Control: max-age=0');
@@ -674,6 +714,7 @@ class Siswa extends Controller
         ini_set('memory_limit', '512M');
         set_time_limit(300);
         if (!Auth::checkRole('admin')) { /* ... handle akses ditolak ... */
+            exit;
         }
 
         $siswaData = $this->model('Siswa_model')->getAllSiswaInduk();
@@ -890,7 +931,7 @@ class Siswa extends Controller
             $sheet->setCellValue($col++ . $rowNum, $siswa->olahraga);
             $sheet->setCellValue($col++ . $rowNum, $siswa->organisasi);
             $sheet->setCellValue($col++ . $rowNum, $siswa->cita_cita);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->lain_lain);
+            $sheet->setCellValue($col++ . $rowNum, $siswa->col . $rowNum, $siswa->lain_lain);
             $sheet->setCellValue($col++ . $rowNum, $siswa->nama_status_siswa); // Gunakan alias baru
             $sheet->setCellValue($col++ . $rowNum, $siswa->tahun_lulus);
             $sheet->setCellValue($col++ . $rowNum, $siswa->nama_rombel);
@@ -909,20 +950,24 @@ class Siswa extends Controller
         $writer = new Xlsx($spreadsheet);
         $filename = 'data_induk_lengkap_' . date('YmdHis') . '.xlsx';
 
+        // ==================== TAMBAHKAN LOG DI SINI ====================
+        // Menghitung jumlah record yang berhasil diekspor untuk informasi audit
+        $total_data = count($siswaData);
+        $this->logActivity('EXPORT', "Admin melakukan ekspor seluruh data Buku Induk Siswa (Master) ke format Excel. Total: {$total_data} baris data diekspor.");
+        // ===============================================================
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');
-
-        // echo "Berhasil diproses tanpa error!";
-        // die;
         exit;
     }
 
     public function exportExcelKeluar()
     {
         if (!Auth::checkRole('admin')) { /* ... handle akses ditolak ... */
+            exit;
         }
 
         $siswaData = $this->model('Siswa_model')->getAllSiswaKeluar();
@@ -1154,7 +1199,13 @@ class Siswa extends Controller
 
         // Siapkan Writer dan Header Download
         $writer = new Xlsx($spreadsheet);
-        $filename = 'data_siswa_lengkap_' . date('YmdHis') . '.xlsx';
+        $filename = 'data_siswa_keluar_' . date('YmdHis') . '.xlsx';
+
+        // ==================== TAMBAHKAN LOG DI SINI ====================
+        // Menghitung jumlah data siswa keluar yang diekspor
+        $total_data = count($siswaData);
+        $this->logActivity('EXPORT', "Admin melakukan ekspor data Siswa Keluar / Mutasi ke format Excel. Total: {$total_data} baris data diekspor.");
+        // ===============================================================
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
@@ -1187,7 +1238,6 @@ class Siswa extends Controller
             die("Error: Data profil sekolah belum lengkap atau belum diisi di database.");
         }
 
-
         $no_absen = $this->model('Siswa_model')->hitungNomorAbsen($siswa_data->id_induk, $siswa_data->rombel);
 
         // 3. Siapkan data untuk view PDF
@@ -1199,8 +1249,6 @@ class Siswa extends Controller
 
         // 4. Render view HTML ke dalam variabel
         $html = $this->renderView('siswa/pdf_cover_raport', $data_pdf);
-
-
 
         // 5. Konfigurasi Dompdf
         $options = new Options();
@@ -1225,6 +1273,13 @@ class Siswa extends Controller
         // Buat nama file yang aman
         $nama_file_safe = preg_replace('/[^A-Za-z0-9_\-]/', '_', $siswa_data->nama_siswa);
         $nama_file = "Cover_Rapor_" . $nama_file_safe . ".pdf";
+
+        // ==================== TAMBAHKAN LOG DI SINI ====================
+        // Mencatat log aktivitas cetak cover rapor dengan menyertakan nama dan NISN siswa
+        $identitas_siswa = $siswa_data->nama_siswa . " (NISN: " . ($siswa_data->nisn ?? '-') . ")";
+        $this->logActivity('PRINT', "Admin mencetak / menampilkan PDF Cover Rapor untuk siswa: {$identitas_siswa}.");
+        // ===============================================================
+
         $dompdf->stream($nama_file, array("Attachment" => false));
         exit(); // Hentikan script setelah PDF dikirim
     }
@@ -1455,31 +1510,44 @@ class Siswa extends Controller
                 }
 
                 // Panggil model untuk eksekusi query insert batch
-                // 1. Panggil model untuk eksekusi query
                 $hasil = $this->model('Siswa_model')->importDataSiswa($dataImport);
 
-                // 2. --- LOGIKA ALERT BARU BERDASARKAN HASIL MODEL ---
+                // 2. --- LOGIKA ALERT BARU BERDASARKAN HASIL MODEL + LOG ACTIVITY ---
                 if ($hasil['error_db'] !== null) {
                     // Jika ada error struktur kolom atau database
                     Flasher::setFlash('Gagal Import', 'Struktur kolom salah/Data kepanjangan. Info sistem: ' . $hasil['error_db'], 'danger');
+
+                    // Log error database
+                    $this->logActivity('IMPORT', "Admin gagal melakukan import Excel ke Rombel ID: {$id_rombel}. Masalah basis data: {$hasil['error_db']}");
                 } elseif ($hasil['berhasil'] > 0) {
                     // Jika ada yang berhasil masuk
                     $pesan = $hasil['berhasil'] . ' Data siswa berhasil disimpan.';
+                    $logPesan = "Admin berhasil mengimpor berkas Excel ke Rombel ID: {$id_rombel}. Total data masuk: {$hasil['berhasil']} baris.";
 
                     if (count($hasil['duplikat']) > 0) {
                         // Jika berhasil sebagian, tapi ada yang kembar
                         $pesan .= ' Namun, ' . count($hasil['duplikat']) . ' data dilewati karena NISN/No Induk sudah terdaftar.';
+                        $logPesan .= " Dilewati (Duplikat): " . count($hasil['duplikat']) . " data.";
                     }
 
                     Flasher::setFlash('Berhasil', $pesan, 'success');
+
+                    // Log sukses (termasuk catatan jika ada data duplikat)
+                    $this->logActivity('IMPORT', $logPesan);
                 } else {
                     // Jika 0 yang berhasil masuk
                     if (count($hasil['duplikat']) > 0) {
                         // Gagal karena semua data di Excel sudah ada di Database
                         Flasher::setFlash('Gagal', 'Semua data di file Excel sudah terdaftar di sistem (Nomor Induk / NISN Duplikat).', 'warning');
+
+                        // Log gagal karena seluruh isi berkas duplikat
+                        $this->logActivity('IMPORT', "Admin mencoba mengimpor data ke Rombel ID: {$id_rombel}, tetapi seluruh data (" . count($hasil['duplikat']) . " baris) dilewati karena duplikat.");
                     } else {
                         // Gagal karena Excelnya memang kosong
                         Flasher::setFlash('Gagal', 'Tidak ada data baru yang diproses. Pastikan file Excel tidak kosong.', 'danger');
+
+                        // Log gagal berkas kosong
+                        $this->logActivity('IMPORT', "Admin mencoba mengimpor data ke Rombel ID: {$id_rombel}, proses dibatalkan karena berkas Excel kosong / tidak valid.");
                     }
                 }
 
@@ -1488,6 +1556,9 @@ class Siswa extends Controller
                 exit;
             } else {
                 Flasher::setFlash('Error', 'Format file tidak didukung. Gunakan .xlsx', 'danger');
+
+                // Log gagal format file tidak sesuai
+                $this->logActivity('IMPORT', "Admin gagal mengimpor berkas ke Rombel ID: " . ($id_rombel ?? 'Tidak Diketahui') . ". Ekstensi/Mime-type berkas ditolak oleh sistem.");
 
                 $id_rombel = $_POST['id_rombel'] ?? null;
                 if ($id_rombel) {
@@ -1629,64 +1700,64 @@ class Siswa extends Controller
         $writer->save('php://output');
         exit;
     }
-    
-   public function apiSiswaPkl()
-{
-    // ==========================================
-    // 1. PENGATURAN CORS (Cross-Origin)
-    // ==========================================
-    header('Access-Control-Allow-Origin: *'); // Akan lebih aman jika diganti jadi 'https://siswa-pkl.ingintau.my.id'
-    header('Access-Control-Allow-Methods: GET, OPTIONS'); // WAJIB tambahkan OPTIONS
-    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-API-KEY'); // WAJIB daftarkan X-API-KEY
 
-    // ==========================================
-    // 2. TANGKAP PREFLIGHT REQUEST DARI BROWSER
-    // ==========================================
-    // Jika browser cuma nanya izin (OPTIONS), langsung beri status OK (200) lalu hentikan.
-    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-        http_response_code(200);
-        exit();
-    }
+    public function apiSiswaPkl()
+    {
+        // ==========================================
+        // 1. PENGATURAN CORS (Cross-Origin)
+        // ==========================================
+        header('Access-Control-Allow-Origin: *'); // Akan lebih aman jika diganti jadi 'https://siswa-pkl.ingintau.my.id'
+        header('Access-Control-Allow-Methods: GET, OPTIONS'); // WAJIB tambahkan OPTIONS
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-API-KEY'); // WAJIB daftarkan X-API-KEY
 
-    // Set tipe konten untuk response sebenarnya
-    header('Content-Type: application/json');
+        // ==========================================
+        // 2. TANGKAP PREFLIGHT REQUEST DARI BROWSER
+        // ==========================================
+        // Jika browser cuma nanya izin (OPTIONS), langsung beri status OK (200) lalu hentikan.
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
 
-    // ==========================================
-    // 3. SISTEM KEAMANAN: CEK API KEY
-    // ==========================================
-    $secretKey = "TUsmekisa1968"; 
+        // Set tipe konten untuk response sebenarnya
+        header('Content-Type: application/json');
 
-    // PHP membaca custom header 'X-API-KEY' sebagai 'HTTP_X_API_KEY'
-    $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
+        // ==========================================
+        // 3. SISTEM KEAMANAN: CEK API KEY
+        // ==========================================
+        $secretKey = "TUsmekisa1968";
 
-    // Jika kunci tidak cocok atau kosong, TENDANG!
-    if ($requestApiKey !== $secretKey) {
-        http_response_code(401); // Kode 401: Unauthorized
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Akses Ditolak! API Key tidak valid atau tidak ditemukan.'
-        ]);
+        // PHP membaca custom header 'X-API-KEY' sebagai 'HTTP_X_API_KEY'
+        $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
+
+        // Jika kunci tidak cocok atau kosong, TENDANG!
+        if ($requestApiKey !== $secretKey) {
+            http_response_code(401); // Kode 401: Unauthorized
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Akses Ditolak! API Key tidak valid atau tidak ditemukan.'
+            ]);
+            exit;
+        }
+        // ==========================================
+
+        // Jika kunci cocok, baru jalankan model
+        $data = $this->model('Siswa_model')->getSiswaForPkl();
+
+        // Format output JSON
+        if ($data) {
+            echo json_encode([
+                'status' => 'success',
+                'data' => $data
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Data siswa PKL tidak ditemukan',
+                'data' => []
+            ]);
+        }
+
         exit;
     }
-    // ==========================================
-
-    // Jika kunci cocok, baru jalankan model
-    $data = $this->model('Siswa_model')->getSiswaForPkl();
-
-    // Format output JSON
-    if ($data) {
-        echo json_encode([
-            'status' => 'success',
-            'data' => $data
-        ]);
-    } else {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Data siswa PKL tidak ditemukan',
-            'data' => []
-        ]);
-    }
-    
-    exit;
-}
 }
