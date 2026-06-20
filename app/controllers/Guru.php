@@ -71,6 +71,11 @@ class Guru extends Controller
             $_SESSION['username'] = $dataGuru->username;
             $_SESSION['user_roles'] = $guruModel->getLevelsForGuru($dataGuru->id_guru); // Ambil array level untuk disimpan di session
 
+
+            // ==================== TAMBAHKAN LOG DI SINI ====================
+            $this->logActivity('LOGIN', "Guru/Admin bernama {$_SESSION['nama_guru']} berhasil login ke sistem.");
+            // ===============================================================
+
             // Redirect ke halaman dashboard guru
             header('Location: ' . BASEURL . '/dashboard');
             exit;
