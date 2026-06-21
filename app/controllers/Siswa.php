@@ -460,16 +460,27 @@ class Siswa extends Controller
 
     public function exportExcelLengkap()
     {
-        if (!Auth::checkRole('admin')) { /* ... handle akses ditolak ... */
+        // 1. Antisipasi kehabisan memori & waktu eksekusi (wajib untuk 96 kolom)
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 300);
+
+        if (!Auth::checkRole('admin')) {
+            /* ... handle akses ditolak ... */
             exit;
         }
 
         $siswaData = $this->model('Siswa_model')->getAllSiswaLengkap();
+
+        // Pastikan data tidak kosong
+        if (!$siswaData) {
+            $siswaData = [];
+        }
+
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Data Siswa Lengkap');
 
-        // Header kolom (Sesuai urutan Anda, termasuk HP)
+        // Header kolom (Total tepat: 96 Kolom)
         $headers = [
             'No',
             'Nama',
@@ -535,7 +546,7 @@ class Siswa extends Controller
             'Pekerjaan Ayah',
             'Penghasilan Ayah',
             'Alamat Ayah',
-            'No. HP Ayah', // Ditambahkan
+            'No. HP Ayah',
             'Hidup/Mati Ayah',
             'Nama Ibu',
             'NIK Ibu',
@@ -547,7 +558,7 @@ class Siswa extends Controller
             'Pekerjaan Ibu',
             'Penghasilan Ibu',
             'Alamat Ibu',
-            'No. HP Ibu', // Ditambahkan
+            'No. HP Ibu',
             'Hidup/Mati Ibu',
             'Nama Wali',
             'NIK Wali',
@@ -559,7 +570,7 @@ class Siswa extends Controller
             'Pekerjaan Wali',
             'Penghasilan Wali',
             'Alamat Wali',
-            'No. HP Wali', // Ditambahkan
+            'No. HP Wali',
             'Kesenian',
             'Olahraga',
             'Organisasi',
@@ -569,143 +580,154 @@ class Siswa extends Controller
             'Kelas',
             'Created At',
             'Updated At'
-        ]; // Total 96 kolom sekarang
+        ];
 
-        // Tulis Header
-        $col = 'A';
+        // Tulis Header menggunakan koordinat angka (Kolom, Baris)
+        $colNum = 1;
         foreach ($headers as $header) {
-            $sheet->setCellValue($col . '1', $header);
-            $sheet->getStyle($col . '1')->getFont()->setBold(true);
-            $col++;
+            $sheet->setCellValueByColumnAndRow($colNum, 1, $header);
+            $sheet->getStyleByColumnAndRow($colNum, 1)->getFont()->setBold(true);
+            $colNum++;
         }
 
-        // Isi Data Siswa (Sesuaikan urutan dengan header baru)
+        // Isi Data Siswa 
         $rowNum = 2;
         $no = 1;
+
         foreach ($siswaData as $siswa) {
-            $col = 'A';
-            $sheet->setCellValue($col++ . $rowNum, $no++); // No
-            $sheet->setCellValue($col++ . $rowNum, $siswa->nama_siswa);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->nama_panggilan);
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->no_induk, DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->nisn, DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->nik, DataType::TYPE_STRING); // Sesuaikan nama kolom jika beda
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->nkk, DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->no_akta, DataType::TYPE_STRING);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->jenis_kelamin);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tmpt_lhr);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tgl_lhr);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->agama);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->kewarganegaraan);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->anak_ke);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->jml_sdr_kandung);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->jml_sdr_tiri);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->jml_sdr_angkat);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->yatim_piatu);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->bahasa);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->alamat);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->dusun);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->rt);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->rw);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->desa);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->kec);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->kab);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->kd_pos);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->provinsi);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->no_tlp);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->no_hp);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tinggal_bersama);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->jarak_rumah);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->wkt_tempuh);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->transportasi);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->gol_darah);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->penyakit);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->kelainan_jasmani);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tb);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->bb);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->asal_sd);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->npsn_sd);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->pend_sebelumnya);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->asal_smp);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->alamat_smp);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->npsn_smp);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->seri_ijazah_smp);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tgl_ijazah_smp);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->th_ijazah_smp);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->lama_belajar_smp);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tingkat);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->bid_keahlian);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->prog_keahlian);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->jurusan); // Nama jurusan dari JOIN
-            $sheet->setCellValue($col++ . $rowNum, $siswa->diterima_tgl);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->nama_ayah);
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->nik_ayah, DataType::TYPE_STRING);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tmpt_lhr_ayah);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tgl_lhr_ayah);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->agama_ayah);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->kewarganegaraan_ayah);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->pend_ayah);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->pekerjaan_ayah);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->penghasilan_ayah);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->alamat_ayah);
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->hp_ayah, DataType::TYPE_STRING); // HP Ayah as Text
-            $sheet->setCellValue($col++ . $rowNum, $siswa->hidup_mati_ayah);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->nama_ibu);
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->nik_ibu, DataType::TYPE_STRING);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tmpt_lhr_ibu);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tgl_lhr_ibu);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->agama_ibu);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->kewarganegaraan_ibu);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->pend_ibu);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->pekerjaan_ibu);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->penghasilan_ibu);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->alamat_ibu);
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->hp_ibu, DataType::TYPE_STRING); // HP Ibu as Text
-            $sheet->setCellValue($col++ . $rowNum, $siswa->hidup_mati_ibu);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->nama_wali);
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->nik_wali, DataType::TYPE_STRING);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tmpt_lhr_wali);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->tgl_lhr_wali);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->agama_wali);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->kewarganegaraan_wali);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->pend_wali);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->pekerjaan_wali);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->penghasilan_wali);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->alamat_wali);
-            $sheet->setCellValueExplicit($col++ . $rowNum, $siswa->hp_wali, DataType::TYPE_STRING); // HP Wali as Text
-            $sheet->setCellValue($col++ . $rowNum, $siswa->kesenian);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->olahraga);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->organisasi);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->cita_cita);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->lain_lain);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->nama_status_siswa); // Gunakan alias baru
-            $sheet->setCellValue($col++ . $rowNum, $siswa->nama_rombel);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->created_at_induk); // Sesuaikan nama kolom jika beda
-            $sheet->setCellValue($col++ . $rowNum, $siswa->updated_at_induk); // Sesuaikan nama kolom jika beda
+            $c = 1; // Reset kolom ke 1 (Kolom A) untuk setiap baris baru
+
+            // Memanfaatkan helper isset() agar jika database mengembalikan null atau property tidak ketemu, aplikasi TIDAK crash/error.
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, $no++);
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->nama_siswa) ? $siswa->nama_siswa : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->nama_panggilan) ? $siswa->nama_panggilan : '');
+
+            // Untuk string/teks angka panjang (NIK, NISN, No HP) agar tidak berubah jadi 1E+13 atau hilang angka 0 di depan
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->no_induk) ? $siswa->no_induk : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->nisn) ? $siswa->nisn : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->nik) ? $siswa->nik : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->nkk) ? $siswa->nkk : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->no_akta) ? $siswa->no_akta : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->jenis_kelamin) ? $siswa->jenis_kelamin : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tmpt_lhr) ? $siswa->tmpt_lhr : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tgl_lhr) ? $siswa->tgl_lhr : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->agama) ? $siswa->agama : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->kewarganegaraan) ? $siswa->kewarganegaraan : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->anak_ke) ? $siswa->anak_ke : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->jml_sdr_kandung) ? $siswa->jml_sdr_kandung : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->jml_sdr_tiri) ? $siswa->jml_sdr_tiri : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->jml_sdr_angkat) ? $siswa->jml_sdr_angkat : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->yatim_piatu) ? $siswa->yatim_piatu : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->bahasa) ? $siswa->bahasa : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->alamat) ? $siswa->alamat : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->dusun) ? $siswa->dusun : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->rt) ? $siswa->rt : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->rw) ? $siswa->rw : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->desa) ? $siswa->desa : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->kec) ? $siswa->kec : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->kab) ? $siswa->kab : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->kd_pos) ? $siswa->kd_pos : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->provinsi) ? $siswa->provinsi : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->no_tlp) ? $siswa->no_tlp : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->no_hp) ? $siswa->no_hp : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tinggal_bersama) ? $siswa->tinggal_bersama : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->jarak_rumah) ? $siswa->jarak_rumah : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->wkt_tempuh) ? $siswa->wkt_tempuh : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->transportasi) ? $siswa->transportasi : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->gol_darah) ? $siswa->gol_darah : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->penyakit) ? $siswa->penyakit : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->kelainan_jasmani) ? $siswa->kelainan_jasmani : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tb) ? $siswa->tb : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->bb) ? $siswa->bb : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->asal_sd) ? $siswa->asal_sd : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->npsn_sd) ? $siswa->npsn_sd : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->pend_sebelumnya) ? $siswa->pend_sebelumnya : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->asal_smp) ? $siswa->asal_smp : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->alamat_smp) ? $siswa->alamat_smp : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->npsn_smp) ? $siswa->npsn_smp : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->seri_ijazah_smp) ? $siswa->seri_ijazah_smp : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tgl_ijazah_smp) ? $siswa->tgl_ijazah_smp : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->th_ijazah_smp) ? $siswa->th_ijazah_smp : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->lama_belajar_smp) ? $siswa->lama_belajar_smp : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tingkat) ? $siswa->tingkat : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->bid_keahlian) ? $siswa->bid_keahlian : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->prog_keahlian) ? $siswa->prog_keahlian : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->jurusan) ? $siswa->jurusan : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->diterima_tgl) ? $siswa->diterima_tgl : '');
+
+            // Data Ayah
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->nama_ayah) ? $siswa->nama_ayah : '');
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->nik_ayah) ? $siswa->nik_ayah : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tmpt_lhr_ayah) ? $siswa->tmpt_lhr_ayah : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tgl_lhr_ayah) ? $siswa->tgl_lhr_ayah : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->agama_ayah) ? $siswa->agama_ayah : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->kewarganegaraan_ayah) ? $siswa->kewarganegaraan_ayah : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->pend_ayah) ? $siswa->pend_ayah : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->pekerjaan_ayah) ? $siswa->pekerjaan_ayah : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->penghasilan_ayah) ? $siswa->penghasilan_ayah : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->alamat_ayah) ? $siswa->alamat_ayah : '');
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->hp_ayah) ? $siswa->hp_ayah : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->hidup_mati_ayah) ? $siswa->hidup_mati_ayah : '');
+
+            // Data Ibu
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->nama_ibu) ? $siswa->nama_ibu : '');
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->nik_ibu) ? $siswa->nik_ibu : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tmpt_lhr_ibu) ? $siswa->tmpt_lhr_ibu : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tgl_lhr_ibu) ? $siswa->tgl_lhr_ibu : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->agama_ibu) ? $siswa->agama_ibu : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->kewarganegaraan_ibu) ? $siswa->kewarganegaraan_ibu : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->pend_ibu) ? $siswa->pend_ibu : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->pekerjaan_ibu) ? $siswa->pekerjaan_ibu : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->penghasilan_ibu) ? $siswa->penghasilan_ibu : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->alamat_ibu) ? $siswa->alamat_ibu : '');
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->hp_ibu) ? $siswa->hp_ibu : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->hidup_mati_ibu) ? $siswa->hidup_mati_ibu : '');
+
+            // Data Wali
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->nama_wali) ? $siswa->nama_wali : '');
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->nik_wali) ? $siswa->nik_wali : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tmpt_lhr_wali) ? $siswa->tmpt_lhr_wali : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->tgl_lhr_wali) ? $siswa->tgl_lhr_wali : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->agama_wali) ? $siswa->agama_wali : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->kewarganegaraan_wali) ? $siswa->kewarganegaraan_wali : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->pend_wali) ? $siswa->pend_wali : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->pekerjaan_wali) ? $siswa->pekerjaan_wali : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->penghasilan_wali) ? $siswa->penghasilan_wali : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->alamat_wali) ? $siswa->alamat_wali : '');
+            $sheet->setCellValueExplicitByColumnAndRow($c++, $rowNum, isset($siswa->hp_wali) ? $siswa->hp_wali : '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+
+            // Lain-lain & Status
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->kesenian) ? $siswa->kesenian : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->olahraga) ? $siswa->olahraga : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->organisasi) ? $siswa->organisasi : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->cita_cita) ? $siswa->cita_cita : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->lain_lain) ? $siswa->lain_lain : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->nama_status_siswa) ? $siswa->nama_status_siswa : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->nama_rombel) ? $siswa->nama_rombel : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->created_at_induk) ? $siswa->created_at_induk : '');
+            $sheet->setCellValueByColumnAndRow($c++, $rowNum, isset($siswa->updated_at_induk) ? $siswa->updated_at_induk : '');
 
             $rowNum++;
         }
-
-        // Auto size columns (opsional, bisa memakan waktu jika data banyak)
-        // foreach (range('A', $sheet->getHighestColumn()) as $columnID) {
-        //     $sheet->getColumnDimension($columnID)->setAutoSize(true);
-        // }
 
         // Siapkan Writer dan Header Download
         $writer = new Xlsx($spreadsheet);
         $filename = 'data_siswa_lengkap_' . date('YmdHis') . '.xlsx';
 
-        // ==================== TAMBAHKAN LOG DI SINI ====================
-        // Menghitung jumlah data untuk melengkapi informasi log
+        // Log Aktivitas
         $total_data = count($siswaData);
         $this->logActivity('EXPORT', "Admin melakukan ekspor seluruh database (Data Siswa Lengkap) ke format Excel. Total: {$total_data} baris data diekspor.");
-        // ===============================================================
-        if (ob_get_contents()) {
+
+        // MEMBERSIHKAN BUFFER AGAR FILE TIDAK CORRUPT
+        if (ob_get_length()) {
             ob_end_clean();
         }
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
         header('Cache-Control: max-age=0');
+        header('Pragma: public');
 
         $writer->save('php://output');
         exit;
