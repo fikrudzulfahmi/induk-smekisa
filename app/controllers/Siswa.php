@@ -700,7 +700,9 @@ class Siswa extends Controller
         $total_data = count($siswaData);
         $this->logActivity('EXPORT', "Admin melakukan ekspor seluruh database (Data Siswa Lengkap) ke format Excel. Total: {$total_data} baris data diekspor.");
         // ===============================================================
-
+        if (ob_get_contents()) {
+            ob_end_clean();
+        }
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
         header('Cache-Control: max-age=0');
