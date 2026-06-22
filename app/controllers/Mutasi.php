@@ -169,7 +169,7 @@ class Mutasi extends Controller
         // (Asumsi Anda punya method getSiswaById di model siswa, jika tidak, hapus 2 baris ini 
         // dan ganti variabel $nama_siswa menjadi "ID $id_siswa" saja)
         $dataSiswa = $this->siswaModel->getSiswaById($id_siswa);
-        $nama_siswa = $dataSiswa ? $dataSiswa['nama_siswa'] : "ID $id_siswa";
+        $nama_siswa = $dataSiswa ? $dataSiswa->nama_siswa : "ID $id_siswa";
 
         try {
             if ($jenis_aksi == 'keluar') {
