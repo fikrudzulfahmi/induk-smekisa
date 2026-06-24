@@ -3,6 +3,7 @@
 // 1. KONFIGURASI DATABASE & FILE
 // ==========================================
 require_once __DIR__ . '/../app/config/config.php';
+// PERBAIKAN: Path disesuaikan karena credentials.php ada di dalam folder cronjob yang sama
 require_once __DIR__ . '/../app/config/credentials.php';
 
 // Masukkan konstanta dari config.php ke variabel backup
@@ -48,7 +49,7 @@ $response = json_decode(curl_exec($ch), true);
 curl_close($ch);
 
 if (!isset($response['access_token'])) {
-    die("Gagal mendapatkan Access Token dari Google.");
+    die("Gagal mendapatkan Access Token dari Google. Periksa Client ID/Secret/Refresh Token kamu.\n");
 }
 $accessToken = $response['access_token'];
 
@@ -72,20 +73,20 @@ if (!empty($searchResult['files'])) {
         curl_setopt($chDel, CURLOPT_HTTPHEADER, ["Authorization: Bearer {$accessToken}"]);
         curl_exec($chDel);
         curl_close($chDel);
-        echo "File lama dengan ID {$fileId} berhasil dihapus.\n";
+        echo "File lama dengan ID {$fileId} berhasil dihapus dari Google Drive.\n";
     }
 }
 
 // ==========================================
 // 6. UPLOAD FILE BARU (MULTIPART cURL)
 // ==========================================
-$boundary = "===" . time() . "===";
+$boundary = "=== " . time() . " ===";
 $metadata = json_encode([
     'name'    => $driveName,
     'parents' => [$folderId]
 ]);
 
-$delimiter = "外部\r\n--" . $boundary . "\r\n";
+// PERBAIKAN: Membersihkan karakter tulisan asing di delimiter body agar format multipart valid
 $body = "--" . $boundary . "\r\n" .
     "Content-Type: application/json; charset=UTF-8\r\n\r\n" .
     $metadata . "\r\n" .
@@ -104,18 +105,25 @@ curl_setopt($chUpload, CURLOPT_HTTPHEADER, [
     "Content-Length: " . strlen($body)
 ]);
 
-$uploadResult = json_decode(curl_exec($chUpload), true);
+// PERBAIKAN: Menangkap respons mentah dan status HTTP sebelum di-decode untuk kebutuhan debug
+$uploadResponse = curl_exec($chUpload);
+$uploadStatus   = curl_getinfo($chUpload, CURLINFO_HTTP_CODE);
 curl_close($chUpload);
 
+$uploadResult = json_decode($uploadResponse, true);
+
 // ==========================================
-// 7. BERSIHKAN FILE TEMPORER DI SERVER
+// 7. BERSIHKAN FILE TEMPORER DI SERVER & CEK STATUS
 // ==========================================
 if (file_exists($localFile)) {
     unlink($localFile);
 }
 
-if (isset($uploadResult['id'])) {
-    echo "Sukses! Backup baru berhasil diunggah. ID: " . $uploadResult['id'] . "\n";
+if ($uploadStatus === 200 && isset($uploadResult['id'])) {
+    echo "Sukses! Backup baru berhasil diunggah. ID File Drive: " . $uploadResult['id'] . "\n";
 } else {
     echo "Gagal mengunggah file baru ke Google Drive.\n";
+    echo "HTTP Status Code: " . $uploadStatus . "\n";
+    echo "Response Lengkap dari Google:\n";
+    echo $uploadResponse . "\n";
 }
