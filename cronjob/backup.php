@@ -80,13 +80,15 @@ if (!empty($searchResult['files'])) {
 // ==========================================
 // 6. UPLOAD FILE BARU (MULTIPART cURL)
 // ==========================================
-$boundary = "=== " . time() . " ===";
+// KUNCI PERBAIKAN: Gunakan string boundary yang rapat dan bersih
+$boundary = "BNDR_" . md5(time());
+
 $metadata = json_encode([
     'name'    => $driveName,
     'parents' => [$folderId]
 ]);
 
-// PERBAIKAN: Membersihkan karakter tulisan asing di delimiter body agar format multipart valid
+// Pastikan susunan baris dan \r\n di bawah ini tidak ada spasi liar
 $body = "--" . $boundary . "\r\n" .
     "Content-Type: application/json; charset=UTF-8\r\n\r\n" .
     $metadata . "\r\n" .
@@ -101,11 +103,10 @@ curl_setopt($chUpload, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($chUpload, CURLOPT_POSTFIELDS, $body);
 curl_setopt($chUpload, CURLOPT_HTTPHEADER, [
     "Authorization: Bearer {$accessToken}",
-    "Content-Type: multipart/related; boundary={$boundary}",
+    "Content-Type: multipart/related; boundary=" . $boundary, // Di sini disinkronkan rapat
     "Content-Length: " . strlen($body)
 ]);
 
-// PERBAIKAN: Menangkap respons mentah dan status HTTP sebelum di-decode untuk kebutuhan debug
 $uploadResponse = curl_exec($chUpload);
 $uploadStatus   = curl_getinfo($chUpload, CURLINFO_HTTP_CODE);
 curl_close($chUpload);
