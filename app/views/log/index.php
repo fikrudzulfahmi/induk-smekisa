@@ -7,25 +7,29 @@
     <div class="page-content">
         <?php Flasher::flash(); ?>
 
-        <div class="card border-start border-4 <?= (isset($data['backup']['status']) && $data['backup']['status'] == 'sukses') ? 'border-success' : 'border-danger'; ?> mb-4 shadow-sm">
+        <?php
+        $isSukses = (isset($data['backup']['status']) && $data['backup']['status'] == 'sukses');
+        $hasData = !empty($data['backup']);
+        ?>
+        <div class="card border-start border-4 <?= ($hasData && $isSukses) ? 'border-success' : 'border-danger'; ?> mb-4 shadow-sm">
             <div class="card-body py-3 px-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap">
                     <div class="d-flex align-items-center mb-2 mb-md-0">
                         <div class="avatar avatar-lg me-3">
-                            <span class="avatar-content <?= (isset($data['backup']['status']) && $data['backup']['status'] == 'sukses') ? 'bg-light-success text-success' : 'bg-light-danger text-danger'; ?> fs-4">
+                            <span class="avatar-content <?= ($hasData && $isSukses) ? 'bg-light-success text-success' : 'bg-light-danger text-danger'; ?> fs-4">
                                 <i class="bi bi-cloud-arrow-up-fill"></i>
                             </span>
                         </div>
                         <div>
                             <h6 class="mb-0 text-muted">Status Auto Backup (Google Drive)</h6>
                             <span class="small font-semibold">
-                                <?= isset($data['backup']['keterangan']) ? $data['backup']['keterangan'] : 'Belum ada rekaman backup otomatis harian.'; ?>
+                                <?= isset($data['backup']['keterangan']) ? $data['backup']['keterangan'] : 'Belum ada rekaman backup otomatis harian harian.'; ?>
                             </span>
                         </div>
                     </div>
                     <div class="text-md-end">
                         <p class="mb-0 text-muted small">Eksekusi Terakhir:</p>
-                        <span class="badge <?= (isset($data['backup']['status']) && $data['backup']['status'] == 'sukses') ? 'bg-success' : 'bg-danger'; ?> font-bold">
+                        <span class="badge <?= ($hasData && $isSukses) ? 'bg-success' : 'bg-danger'; ?> font-bold">
                             <i class="bi bi-clock-history me-1"></i>
                             <?= isset($data['backup']['created_at']) ? date('d M Y - H:i', strtotime($data['backup']['created_at'])) . ' WIB' : '-'; ?>
                         </span>
