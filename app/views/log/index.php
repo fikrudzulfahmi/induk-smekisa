@@ -6,6 +6,33 @@
     </div>
     <div class="page-content">
         <?php Flasher::flash(); ?>
+
+        <div class="card border-start border-4 <?= (isset($data['backup']['status']) && $data['backup']['status'] == 'sukses') ? 'border-success' : 'border-danger'; ?> mb-4 shadow-sm">
+            <div class="card-body py-3 px-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <div class="d-flex align-items-center mb-2 mb-md-0">
+                        <div class="avatar avatar-lg me-3">
+                            <span class="avatar-content <?= (isset($data['backup']['status']) && $data['backup']['status'] == 'sukses') ? 'bg-light-success text-success' : 'bg-light-danger text-danger'; ?> fs-4">
+                                <i class="bi bi-cloud-arrow-up-fill"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-muted">Status Auto Backup (Google Drive)</h6>
+                            <span class="small font-semibold">
+                                <?= isset($data['backup']['keterangan']) ? $data['backup']['keterangan'] : 'Belum ada rekaman backup otomatis harian.'; ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-md-end">
+                        <p class="mb-0 text-muted small">Eksekusi Terakhir:</p>
+                        <span class="badge <?= (isset($data['backup']['status']) && $data['backup']['status'] == 'sukses') ? 'bg-success' : 'bg-danger'; ?> font-bold">
+                            <i class="bi bi-clock-history me-1"></i>
+                            <?= isset($data['backup']['created_at']) ? date('d M Y - H:i', strtotime($data['backup']['created_at'])) . ' WIB' : '-'; ?>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card">
             <div class="card-header">
                 <span class="text-muted">Menampilkan seluruh rekaman aksi pengguna di dalam aplikasi.</span>
@@ -35,19 +62,19 @@
         "serverSide": true,
         "order": [
             [0, "desc"]
-        ], // Default: Kolom ke-0 (Waktu) di-sort secara Descending
+        ],
         "ajax": {
             "url": "<?= BASEURL; ?>/log/getServerSideLog",
             "type": "POST"
         },
         "columns": [{
                 "data": "created_at"
-            }, // Index 0 -> cocok dengan $columns[0] di model
+            },
             {
                 "data": "nama_user"
-            }, // Index 1 -> cocok dengan $columns[1] di model
+            },
             {
-                "data": "role", // Index 2 -> cocok dengan $columns[2] di model
+                "data": "role",
                 "render": function(data) {
                     let badgeClass = 'bg-secondary';
                     if (data === 'admin') badgeClass = 'bg-danger';
@@ -57,7 +84,7 @@
                 }
             },
             {
-                "data": "action", // Index 3 -> cocok dengan $columns[3] di model
+                "data": "action",
                 "render": function(data) {
                     let badgeAction = 'bg-secondary';
                     switch (data.toUpperCase()) {
@@ -82,7 +109,7 @@
             },
             {
                 "data": "description"
-            } // Index 4 -> cocok dengan $columns[4] di model
+            }
         ]
     });
 </script>

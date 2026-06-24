@@ -114,17 +114,54 @@ curl_close($chUpload);
 $uploadResult = json_decode($uploadResponse, true);
 
 // ==========================================
-// 7. BERSIHKAN FILE TEMPORER DI SERVER & CEK STATUS
+// 7. BERSIHKAN FILE TEMPORER DI SERVER & LIHAT STATUS
 // ==========================================
 if (file_exists($localFile)) {
     unlink($localFile);
 }
 
+// Siapkan variabel untuk pencatatan database
+$statusLog = 'gagal';
+$keteranganLog = 'Gagal mengunggah file baru ke Google Drive.';
+
 if ($uploadStatus === 200 && isset($uploadResult['id'])) {
     echo "Sukses! Backup baru berhasil diunggah. ID File Drive: " . $uploadResult['id'] . "\n";
+    $statusLog = 'sukses';
+    $keteranganLog = "Backup berhasil diunggah dengan ID: " . $uploadResult['id'];
 } else {
     echo "Gagal mengunggah file baru ke Google Drive.\n";
     echo "HTTP Status Code: " . $uploadStatus . "\n";
-    echo "Response Lengkap dari Google:\n";
-    echo $uploadResponse . "\n";
+    echo "Response Lengkap dari Google:\n" . $uploadResponse . "\n";
+
+    // Jika gagal sebelum upload (misal mysqldump atau token error)
+    if (isset($response['error'])) {
+        $keteranganLog = "Gagal OAuth: " . $response['error'];
+    } elseif ($uploadStatus !== 200) {
+        $keteranganLog = "Gagal Drive API (Status: $uploadStatus)";
+    }
+}
+
+// ==========================================
+// BONUS: CATAT LOG KE DATABASE (REPLACE DATA)
+// ==========================================
+try {
+    // Hubungkan ke database menggunakan data dari config.php
+    $dsn = "mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4";
+    $pdo = new PDO($dsn, $dbUser, $dbPass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
+
+    // Gunakan REPLACE INTO agar data lama dengan ID 1 otomatis tertimpa data baru
+    $sql = "REPLACE INTO backup_status (id, keterangan, status, created_at) 
+            VALUES (1, :keterangan, :status, NOW())";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ':keterangan' => $keteranganLog,
+        ':status'     => $statusLog
+    ]);
+
+    echo "Status backup berhasil dicatat ke database.\n";
+} catch (PDOException $e) {
+    echo "Gagal mencatat status backup ke database: " . $e->getMessage() . "\n";
 }

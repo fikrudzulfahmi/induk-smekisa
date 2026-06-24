@@ -13,14 +13,17 @@ class Log extends Controller
 
         $data['judul'] = 'Activity Log Sistem';
 
+        // PERBAIKAN: Ambil data status backup terakhir dari database
+        $data['backup'] = $this->model('LogActivity_model')->getLatestBackupStatus();
+
         // Memanggil template Mazer Admin Anda
         $this->view('templates/header', $data);
         $this->view('templates/sidebar', $data);
-        $this->view('log/index', $data); // Mengarah ke file view log yang kita buat kemarin
+        $this->view('log/index', $data); // Mengirim $data ke view index.php
         $this->view('templates/footer');
     }
 
-    // Fitur Penyedia Data AJAX untuk DataTables Server-Side (Mirip getServerSideGuru)
+    // Fitur Penyedia Data AJAX untuk DataTables Server-Side
     public function getServerSideLog()
     {
         if (!isset($_SESSION['login_guru'])) {
@@ -29,7 +32,6 @@ class Log extends Controller
         }
 
         $requestData = $_POST;
-        // Panggil model log dan jalankan fungsi server-side
         $output = $this->model('LogActivity_model')->getDataLogServerSide($requestData);
         echo json_encode($output);
     }

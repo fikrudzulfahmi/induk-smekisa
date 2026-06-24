@@ -110,4 +110,11 @@ class LogActivity_model
             "data"            => $data
         ];
     }
+    // Tambahkan fungsi ini di paling bawah sebelum kurung kurawal tutup class LogActivity_model
+
+    public function getLatestBackupStatus()
+    {
+        $this->db->query("SELECT * FROM backup_status WHERE id = 1");
+        return $this->db->single();
+    }
 }
