@@ -3,6 +3,7 @@
 // 1. KONFIGURASI DATABASE & FILE
 // ==========================================
 require_once __DIR__ . '/../app/config/config.php';
+require_once __DIR__ . '/../app/config/credentials.php';
 
 // Masukkan konstanta dari config.php ke variabel backup
 $dbHost     = DB_HOST;
@@ -14,11 +15,12 @@ $localFile  = __DIR__ . '/temp_backup.sql'; // File sementara tetap di folder cr
 // ==========================================
 // 2. KONFIGURASI GOOGLE DRIVE
 // ==========================================
-$clientId     = '860643794750-9f0bboljrv903a57iib8nnktni3ksuen.apps.googleusercontent.com';
-$clientSecret = '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';
-$refreshToken = '1//046mfSvc5uRZjCgYIARAAGAQSNwF-L9IrFcCDafHQhxtyAa3Eo57zAOyZF5OzV-3rJADr53tDqkmXcDUp2-ReP0wi92fnT_7NWeE';
-$folderId     = '1j4Zi1TxnUiOdxW-l_ZdNTXZZvszJfjLU';
-$driveName    = 'backup_induk.sql'; // Nama file tetap agar bisa di-replace
+$clientId     = G_CLIENT_ID;
+$clientSecret = G_CLIENT_SECRET;
+$refreshToken = G_REFRESH_TOKEN;
+$folderId     = G_FOLDER_ID;
+$driveName    = 'backup_induk.sql';
+
 
 // ==========================================
 // 3. PROSES EKSPOR DATABASE (CIRI KHAS NATIVE)
