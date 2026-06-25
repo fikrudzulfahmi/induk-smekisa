@@ -3,7 +3,7 @@
 // 1. KONFIGURASI DATABASE & FILE
 // ==========================================
 require_once __DIR__ . '/../app/config/config.php';
-require_once __DIR__ . '/../app/config/credentials.php'; // Path ke app/config/
+require_once __DIR__ . '/../app/config/credentials.php';
 
 $dbHost     = DB_HOST;
 $dbUser     = DB_USER;
@@ -12,13 +12,16 @@ $dbName     = DB_NAME;
 $localFile  = __DIR__ . '/temp_backup.sql';
 
 // ==========================================
-// 2. KONFIGURASI GOOGLE DRIVE
+// 2. KONFIGURASI GOOGLE DRIVE (DENGAN TIMESTAMP)
 // ==========================================
 $clientId     = G_CLIENT_ID;
 $clientSecret = G_CLIENT_SECRET;
 $refreshToken = G_REFRESH_TOKEN;
 $folderId     = trim(G_FOLDER_ID);
-$driveName    = 'backup_induk.sql';
+
+// Menambahkan tanggal dan jam pada nama file
+// Contoh hasil: backup_induk_2026-06-25_20-00.sql
+$driveName    = 'backup_induk_' . date('Y-m-d_H-i') . '.sql';
 
 // ==========================================
 // 3. PROSES EKSPOR DATABASE LOKAL
@@ -51,9 +54,10 @@ if (!isset($response['access_token'])) {
 $accessToken = $response['access_token'];
 
 // ==========================================
-// 5. CARI & INGAT ID FILE LAMA (JANGAN DIHAPUS DULU!)
+// 5. CARI & INGAT ID FILE LAMA (MENGGUNAKAN CONTAINS)
 // ==========================================
-$query = "name='{$driveName}' and '{$folderId}' in parents and trashed=false";
+// Mencari file yang mengandung kata 'backup_induk_' agar file kemarin (beda tanggal) tetap terdeteksi
+$query = "name contains 'backup_induk_' and '{$folderId}' in parents and trashed=false";
 $urlSearch = "https://www.googleapis.com/drive/v3/files?q=" . urlencode($query) . "&fields=files(id,name)";
 
 $chSearch = curl_init($urlSearch);
@@ -111,9 +115,9 @@ $keteranganLog = 'Gagal mengunggah file baru ke Google Drive.';
 
 // JIKA UPLOAD SUKSES
 if ($uploadStatus === 200 && isset($uploadResult['id'])) {
-    echo "Sukses! Backup baru terunggah. ID: " . $uploadResult['id'] . "\n";
+    echo "Sukses! Backup baru ({$driveName}) terunggah. ID: " . $uploadResult['id'] . "\n";
     $statusLog = 'sukses';
-    $keteranganLog = "Backup berhasil diunggah dengan ID: " . $uploadResult['id'];
+    $keteranganLog = "Backup berhasil diunggah: {$driveName}";
 
     // BARULAH KITA HAPUS FILE LAMANYA DI SINI
     if (!empty($oldFileIds)) {
