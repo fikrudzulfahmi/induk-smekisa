@@ -1331,10 +1331,12 @@ class Siswa_model
     // Query untuk pencarian massal (Search)
     public function searchSiswa($keyword)
     {
-        $query = "SELECT * FROM data_induk LIMIT 5";
-
-        $this->db->query($query);
-        return $this->db->resultSet();
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'SAY HELLO! File Siswa_model.php versi terbaru berhasil terbaca di server!',
+            'keyword_yang_diterima' => $keyword
+        ]);
+        exit; // Menghentikan aplikasi di sini agar tidak lanjut ke query
     }
 
     // Query untuk mengambil 1 data spesifik (Sync)
