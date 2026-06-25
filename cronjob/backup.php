@@ -56,25 +56,34 @@ $accessToken = $response['access_token'];
 // ==========================================
 // 5. CARI & HAPUS FILE LAMA DI DRIVE
 // ==========================================
-$query = urlencode("name='{$driveName}' and '{$folderId}' in parents and trashed=false");
-$ch = curl_init("https://www.googleapis.com/drive/v3/files?q={$query}");
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: Bearer {$accessToken}"]);
-$searchResult = json_decode(curl_exec($ch), true);
-curl_close($ch);
+$folderIdTrim = trim($folderId); // Memastikan tidak ada spasi nyangkut
+$query = "name='{$driveName}' and '{$folderIdTrim}' in parents and trashed=false";
+
+// PERBAIKAN: Menambahkan parameter &fields=files(id,name) agar API wajib merespons dengan ID
+$urlSearch = "https://www.googleapis.com/drive/v3/files?q=" . urlencode($query) . "&fields=files(id,name)";
+
+$chSearch = curl_init($urlSearch);
+curl_setopt($chSearch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($chSearch, CURLOPT_HTTPHEADER, ["Authorization: Bearer {$accessToken}"]);
+$searchResult = json_decode(curl_exec($chSearch), true);
+curl_close($chSearch);
 
 // Jika file lama ketemu, hapus!
-if (!empty($searchResult['files'])) {
+if (isset($searchResult['files']) && count($searchResult['files']) > 0) {
     foreach ($searchResult['files'] as $file) {
         $fileId = $file['id'];
         $chDel = curl_init("https://www.googleapis.com/drive/v3/files/{$fileId}");
         curl_setopt($chDel, CURLOPT_CUSTOMREQUEST, 'DELETE');
         curl_setopt($chDel, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($chDel, CURLOPT_HTTPHEADER, ["Authorization: Bearer {$accessToken}"]);
+        $delStatus = curl_getinfo($chDel, CURLINFO_HTTP_CODE);
         curl_exec($chDel);
         curl_close($chDel);
-        echo "File lama dengan ID {$fileId} berhasil dihapus dari Google Drive.\n";
+        // Tampilkan info di terminal saat diuji coba
+        echo "File lama (ID: {$fileId}) berhasil dihapus.\n";
     }
+} else {
+    echo "Tidak ada file lama yang terdeteksi di Drive.\n";
 }
 
 // ==========================================
