@@ -1,7 +1,8 @@
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php?url=$1 [L]
+# TAMBAHKAN QSA DI DALAM KURUNG SIKU SEPERTI DI BAWAH INI:
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
 
 # php -- BEGIN cPanel-generated handler, do not edit
 # Set the “ea-php82” package as the default “PHP” programming language.
