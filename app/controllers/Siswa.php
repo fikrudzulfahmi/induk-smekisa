@@ -1783,4 +1783,89 @@ class Siswa extends Controller
 
         exit;
     }
+
+    public function apiSearchSiswa()
+    {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-API-KEY');
+
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
+
+        header('Content-Type: application/json');
+
+        // Proteksi API KEY
+        $secretKey = "TUsmekisa1968";
+        $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
+
+        if ($requestApiKey !== $secretKey) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! API Key tidak valid.']);
+            exit;
+        }
+
+        // Tangkap keyword pencarian (?q=nama_atau_nis)
+        $keyword = isset($_GET['q']) ? $_GET['q'] : '';
+
+        if (empty($keyword)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'Parameter query "q" wajib diisi.']);
+            exit;
+        }
+
+        $data = $this->model('Siswa_model')->searchSiswa($keyword);
+
+        echo json_encode([
+            'status' => $data ? 'success' : 'error',
+            'data' => $data ? $data : []
+        ]);
+        exit;
+    }
+
+    // ==========================================
+    // ENDPOINT 2: UNTUK FITUR SYNC SATUAN (UPDATE DATA)
+    // ==========================================
+    public function apiDetailSiswa()
+    {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-API-KEY');
+
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
+
+        header('Content-Type: application/json');
+
+        // Proteksi API KEY
+        $secretKey = "TUsmekisa1968";
+        $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
+
+        if ($requestApiKey !== $secretKey) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! API Key tidak valid.']);
+            exit;
+        }
+
+        // Tangkap NIS (?nis=12345)
+        $nis = isset($_GET['nis']) ? $_GET['nis'] : '';
+
+        if (empty($nis)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'Parameter "nis" wajib diisi.']);
+            exit;
+        }
+
+        $data = $this->model('Siswa_model')->getSiswaByNis($nis);
+
+        echo json_encode([
+            'status' => $data ? 'success' : 'error',
+            'data' => $data ? $data : null
+        ]);
+        exit;
+    }
 }
