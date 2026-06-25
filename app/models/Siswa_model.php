@@ -1334,15 +1334,15 @@ class Siswa_model
         $query = "SELECT 
                 di.no_induk AS nis, 
                 di.nama_siswa AS name, 
-                di.tempat_lahir AS birth_place, 
-                di.tgl_lahir AS birth_date, 
+                di.tmpt_lhr AS birth_place, 
+                di.tgl_lhr AS birth_date, 
                 di.alamat AS address, 
-                di.nama_wali AS guardian_name, 
+                di.nama_ayah AS guardian_name, 
                 di.no_hp AS guardian_phone, 
                 r.nama_rombel AS rombel
-              FROM data_induk di
+              FROM {$this->table} di
               LEFT JOIN rombel r ON di.rombel = r.id_rombel
-            --   WHERE di.id_status = 1 
+              WHERE di.id_status = 1 
                 AND (di.nama_siswa LIKE '%$keyword%' OR di.no_induk LIKE '%$keyword%')
               LIMIT 20"; // Batasi 20 data agar load tidak berat
 
@@ -1356,10 +1356,10 @@ class Siswa_model
         $query = "SELECT 
                 di.no_induk AS nis, 
                 di.nama_siswa AS name, 
-                di.tempat_lahir AS birth_place, 
-                di.tgl_lahir AS birth_date, 
+                di.tmpt_lhr AS birth_place, 
+                di.tgl_lhr AS birth_date, 
                 di.alamat AS address, 
-                di.nama_wali AS guardian_name, 
+                di.nama_ayah AS guardian_name, 
                 di.no_hp AS guardian_phone, 
                 r.nama_rombel AS rombel
               FROM {$this->table} di
