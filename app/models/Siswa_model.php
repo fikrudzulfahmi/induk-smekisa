@@ -1340,7 +1340,7 @@ class Siswa_model
                 di.nama_wali AS guardian_name, 
                 di.no_hp AS guardian_phone, 
                 r.nama_rombel AS rombel
-              FROM {$this->table} di
+              FROM data_induk di
               LEFT JOIN rombel r ON di.rombel = r.id_rombel
               WHERE di.id_status = 1 
                 AND (di.nama_siswa LIKE '%$keyword%' OR di.no_induk LIKE '%$keyword%')
