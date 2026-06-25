@@ -1342,7 +1342,7 @@ class Siswa_model
                 r.nama_rombel AS rombel
               FROM data_induk di
               LEFT JOIN rombel r ON di.rombel = r.id_rombel
-              WHERE di.id_status = 1 
+            --   WHERE di.id_status = 1 
                 AND (di.nama_siswa LIKE '%$keyword%' OR di.no_induk LIKE '%$keyword%')
               LIMIT 20"; // Batasi 20 data agar load tidak berat
 
