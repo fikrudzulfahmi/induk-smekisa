@@ -19,6 +19,8 @@ $clientSecret = G_CLIENT_SECRET;
 $refreshToken = G_REFRESH_TOKEN;
 $folderId     = trim(G_FOLDER_ID);
 
+
+date_default_timezone_set('Asia/Jakarta');
 // Menambahkan tanggal dan jam pada nama file
 // Contoh hasil: backup_induk_2026-06-25_20-00.sql
 $driveName    = 'backup_induk_' . date('Y-m-d_H-i') . '.sql';
