@@ -156,11 +156,14 @@ try {
     $pdo = new PDO($dsn, $dbUser, $dbPass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
     $sql = "REPLACE INTO backup_status (id, keterangan, status, created_at) 
-            VALUES (1, :keterangan, :status, NOW())";
+            VALUES (1, :keterangan, :status, :waktu)";
     $stmt = $pdo->prepare($sql);
+
+    // PERBAIKAN: Masukkan waktu saat ini menggunakan fungsi date() PHP
     $stmt->execute([
         ':keterangan' => $keteranganLog,
-        ':status'     => $statusLog
+        ':status'     => $statusLog,
+        ':waktu'      => date('Y-m-d H:i:s')
     ]);
 } catch (PDOException $e) {
     echo "Gagal mencatat status ke database: " . $e->getMessage() . "\n";
