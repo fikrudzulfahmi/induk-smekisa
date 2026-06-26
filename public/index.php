@@ -1,5 +1,5 @@
 <?php
-
+date_default_timezone_set('Asia/Jakarta');
 error_reporting(E_ALL);
 
 // Paksa PHP untuk menampilkannya ke layar browser
