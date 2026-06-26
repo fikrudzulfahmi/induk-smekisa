@@ -13,10 +13,11 @@ class LogActivity_model
     // Method untuk menyimpan log baru
     public function insertLog($data)
     {
+        // PERBAIKAN: Menambahkan kolom 'created_at' secara manual
         $query = "INSERT INTO " . $this->table . " 
-                  (user_id, nama_user, role, action, description) 
+                  (user_id, nama_user, role, action, description, created_at) 
                   VALUES 
-                  (:user_id, :nama_user, :role, :action, :description)";
+                  (:user_id, :nama_user, :role, :action, :description, :created_at)";
 
         $this->db->query($query);
 
@@ -25,6 +26,9 @@ class LogActivity_model
         $this->db->bind('role', $data['role']);
         $this->db->bind('action', $data['action']);
         $this->db->bind('description', $data['description']);
+
+        // PERBAIKAN: Memasukkan jam WIB saat ini dari server PHP
+        $this->db->bind('created_at', date('Y-m-d H:i:s'));
 
         $this->db->execute();
         return $this->db->rowCount();
