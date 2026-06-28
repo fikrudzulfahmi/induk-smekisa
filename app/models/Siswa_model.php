@@ -1340,7 +1340,7 @@ class Siswa_model
                 di.alamat AS address, 
                 di.nama_ayah AS guardian_name, 
                 di.no_hp AS guardian_phone, 
-                r.nama_rombel AS rombel
+                r.nama_rombel AS rombel,
                 r.tingkat AS tingkat
               FROM {$this->table} di
               LEFT JOIN rombel r ON di.rombel = r.id_rombel
@@ -1366,7 +1366,7 @@ class Siswa_model
                 di.alamat AS address, 
                 di.nama_ayah AS guardian_name, 
                 di.no_hp AS guardian_phone, 
-                r.nama_rombel AS rombel
+                r.nama_rombel AS rombel,
                 r.tingkat AS tingkat
               FROM {$this->table} di
               LEFT JOIN rombel r ON di.rombel = r.id_rombel
