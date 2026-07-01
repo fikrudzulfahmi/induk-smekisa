@@ -1386,7 +1386,8 @@ class Siswa_model
                     di.nama_siswa AS nama 
                   FROM {$this->table} di
                   LEFT JOIN rombel r ON di.rombel = r.id_rombel
-                  WHERE r.nama_rombel = :nama_rombel";
+                  WHERE r.nama_rombel = :nama_rombel
+                  AND di.id_status = 1"; // Hanya siswa aktif
 
         $this->db->query($query);
 
