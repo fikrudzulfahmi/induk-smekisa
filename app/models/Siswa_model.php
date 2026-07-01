@@ -1375,4 +1375,26 @@ class Siswa_model
         $this->db->query($query);
         return $this->db->single(); // Mengembalikan 1 baris objek/array, bukan list array
     }
+
+    public function getSiswaByRombelApi($nama_rombel)
+    {
+        // Menggunakan alias 'di' untuk tabel siswa/induk, dan 'r' untuk rombel
+        // Sesuai dengan spesifikasi, kita panggil nisn, nis (no_induk), dan nama
+        $query = "SELECT 
+                    di.nisn, 
+                    di.no_induk AS nis, 
+                    di.nama_siswa AS nama 
+                  FROM {$this->table} di
+                  LEFT JOIN rombel r ON di.rombel = r.id_rombel
+                  WHERE r.nama_rombel = :nama_rombel";
+
+        $this->db->query($query);
+
+        // Menggunakan bind PDO agar lebih aman dari SQL Injection
+        $this->db->bind(':nama_rombel', $nama_rombel);
+
+        // Mengembalikan list array (banyak baris), sesuaikan method ini dengan 
+        // nama method di class Database Anda (umumnya resultSet atau fetchAll)
+        return $this->db->resultSet();
+    }
 }

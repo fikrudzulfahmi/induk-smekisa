@@ -1868,4 +1868,58 @@ class Siswa extends Controller
         ]);
         exit;
     }
+
+    public function apiSiswaByRombel()
+    {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-API-KEY');
+
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
+
+        // Wajib menyertakan header application/json
+        header('Content-Type: application/json; charset=utf-8');
+
+        // Proteksi API KEY
+        $secretKey = "TUsmekisa1968";
+        $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
+
+        if ($requestApiKey !== $secretKey) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! API Key tidak valid.']);
+            exit;
+        }
+
+        // 1. Tangkap parameter rombel (?rombel=X-RPL)
+        $rombel = isset($_GET['rombel']) ? trim($_GET['rombel']) : '';
+
+        // 2. Error Handling: Jika parameter tidak dikirim atau kosong
+        if (empty($rombel)) {
+            http_response_code(400);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Parameter "rombel" wajib dikirim.'
+            ]);
+            exit;
+        }
+
+        // 3. Panggil Model
+        $data = $this->model('Siswa_model')->getSiswaByRombelApi($rombel);
+
+        // 4. Output / Response (KONTRAK API)
+        http_response_code(200);
+
+        if (empty($data)) {
+            // Jika data kosong, kembalikan JSON array kosong []
+            echo json_encode([]);
+        } else {
+            // Jika ada, kembalikan array JSON murni
+            // Contoh Output: [{"nisn": "...", "nis": "...", "nama": "..."}]
+            echo json_encode($data);
+        }
+        exit;
+    }
 }
