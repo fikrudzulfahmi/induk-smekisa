@@ -1922,4 +1922,67 @@ class Siswa extends Controller
         }
         exit;
     }
+
+    public function siswa()
+    {
+        // Wajib set header agar output dibaca sebagai JSON oleh aplikasi teman Anda
+        header('Content-Type: application/json; charset=utf-8');
+        // Tambahkan header CORS jika API diakses dari domain/aplikasi web yang berbeda
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET');
+
+        // Tangkap parameter 'kelas' dari URL, misal: domain.com/api/siswa?kelas=XII TKJ 1
+        $kelas = isset($_GET['kelas']) ? $_GET['kelas'] : null;
+
+        if (empty($kelas)) {
+            http_response_code(400); // Bad Request
+            echo json_encode([
+                "status" => "error",
+                "message" => "Parameter 'kelas' wajib dikirimkan."
+            ]);
+            exit;
+        }
+
+        // Panggil data dari model
+        $data_induk = $this->model('Siswa_model')->getSiswaByRombelTKJ($kelas);
+
+        // Jika data kosong
+        if (!$data_induk) {
+            echo json_encode([
+                "status" => "success",
+                "message" => "Data tidak ditemukan untuk kelas tersebut.",
+                "data" => []
+            ]);
+            exit;
+        }
+
+        // Format array untuk menyesuaikan dengan struktur JSON yang di-request
+        $response_data = [];
+        foreach ($data_induk as $row) {
+            // Generate email berdasarkan nis/no_induk
+            $email_generated = $row['no_induk'] . '@tkjsmekisa.com';
+
+            $response_data[] = [
+                "nis"           => $row['no_induk'],
+                "nisn"          => $row['nisn'],
+                "nama"          => $row['nama_siswa'],
+                "jk"            => $row['jenis_kelamin'],
+                "tempat_lahir"  => $row['tmpt_lhr'],
+                "tanggal_lahir" => $row['tgl_lhr'],
+                "alamat"        => $row['alamat'],
+                "telepon"       => $row['no_tlp'],
+                "email"         => $email_generated,
+                "rombel"        => $row['nama_rombel']
+            ];
+        }
+
+        // Tampilkan output JSON final
+        http_response_code(200); // OK
+        echo json_encode([
+            "status" => "success",
+            "total"  => count($response_data),
+            "data"   => $response_data
+        ], JSON_PRETTY_PRINT);
+        exit;
+    }
 }
