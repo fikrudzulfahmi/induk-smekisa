@@ -1925,14 +1925,32 @@ class Siswa extends Controller
 
     public function siswa()
     {
-        // Wajib set header agar output dibaca sebagai JSON oleh aplikasi teman Anda
-        header('Content-Type: application/json; charset=utf-8');
-        // Tambahkan header CORS jika API diakses dari domain/aplikasi web yang berbeda
+        // 1. Setup Header & CORS (Termasuk izin untuk X-API-KEY)
         header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET');
+        header('Access-Control-Allow-Methods: GET, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-API-KEY');
 
-        // Tangkap parameter 'kelas' dari URL, misal: domain.com/api/siswa?kelas=XII TKJ 1
-        $kelas = isset($_GET['kelas']) ? $_GET['kelas'] : null;
+        // Handle request OPTIONS (Preflight dari browser)
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
+
+        // Wajib menyertakan header application/json
+        header('Content-Type: application/json; charset=utf-8');
+
+        // 2. Proteksi API KEY
+        $secretKey = "TUsmekisa1968";
+        $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
+
+        if ($requestApiKey !== $secretKey) {
+            http_response_code(401); // Unauthorized
+            echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! API Key tidak valid.']);
+            exit;
+        }
+
+        // 3. Tangkap parameter 'kelas' dari URL (?kelas=X-TKJ)
+        $kelas = isset($_GET['kelas']) ? trim($_GET['kelas']) : '';
 
         if (empty($kelas)) {
             http_response_code(400); // Bad Request
@@ -1943,11 +1961,12 @@ class Siswa extends Controller
             exit;
         }
 
-        // Panggil data dari model
+        // 4. Panggil data dari model
         $data_induk = $this->model('Siswa_model')->getSiswaByRombelTKJ($kelas);
 
-        // Jika data kosong
+        // 5. Jika data kosong
         if (!$data_induk) {
+            http_response_code(200);
             echo json_encode([
                 "status" => "success",
                 "message" => "Data tidak ditemukan untuk kelas tersebut.",
@@ -1956,14 +1975,18 @@ class Siswa extends Controller
             exit;
         }
 
-        // Format array untuk menyesuaikan dengan struktur JSON yang di-request
+        // 6. Format array untuk menyesuaikan dengan struktur JSON yang di-request
         $response_data = [];
         foreach ($data_induk as $row) {
-            // Generate email berdasarkan nis/no_induk
-            $email_generated = $row['no_induk'] . '@tkjsmekisa.com';
+            // Memecah "30619/1502/004" menjadi array dan mengambil index 0 ("30619")
+            $nis_asli = $row['no_induk'];
+            $nis_potong = trim(explode('/', $nis_asli)[0]);
+
+            // Generate email berdasarkan nis/no_induk yang sudah dipotong
+            $email_generated = $nis_potong . '@tkjsmekisa.com';
 
             $response_data[] = [
-                "nis"           => $row['no_induk'],
+                "nis"           => $nis_potong,
                 "nisn"          => $row['nisn'],
                 "nama"          => $row['nama_siswa'],
                 "jk"            => $row['jenis_kelamin'],
@@ -1976,7 +1999,7 @@ class Siswa extends Controller
             ];
         }
 
-        // Tampilkan output JSON final
+        // 7. Tampilkan output JSON final
         http_response_code(200); // OK
         echo json_encode([
             "status" => "success",
