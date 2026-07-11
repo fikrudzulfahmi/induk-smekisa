@@ -1976,10 +1976,11 @@ class Siswa extends Controller
         }
 
         // 6. Format array untuk menyesuaikan dengan struktur JSON yang di-request
+        // 6. Format array untuk menyesuaikan dengan struktur JSON yang di-request
         $response_data = [];
         foreach ($data_induk as $row) {
-            // Memecah "30619/1502/004" menjadi array dan mengambil index 0 ("30619")
-            $nis_asli = $row['no_induk'];
+            // Karena $row adalah Object, kita gunakan -> bukan []
+            $nis_asli = $row->no_induk;
             $nis_potong = trim(explode('/', $nis_asli)[0]);
 
             // Generate email berdasarkan nis/no_induk yang sudah dipotong
@@ -1987,18 +1988,17 @@ class Siswa extends Controller
 
             $response_data[] = [
                 "nis"           => $nis_potong,
-                "nisn"          => $row['nisn'],
-                "nama"          => $row['nama_siswa'],
-                "jk"            => $row['jenis_kelamin'],
-                "tempat_lahir"  => $row['tmpt_lhr'],
-                "tanggal_lahir" => $row['tgl_lhr'],
-                "alamat"        => $row['alamat'],
-                "telepon"       => $row['no_tlp'],
+                "nisn"          => $row->nisn,
+                "nama"          => $row->nama_siswa,
+                "jk"            => $row->jenis_kelamin,
+                "tempat_lahir"  => $row->tmpt_lhr,
+                "tanggal_lahir" => $row->tgl_lhr,
+                "alamat"        => $row->alamat,
+                "telepon"       => $row->no_tlp,
                 "email"         => $email_generated,
-                "rombel"        => $row['nama_rombel']
+                "rombel"        => $row->nama_rombel
             ];
         }
-
         // 7. Tampilkan output JSON final
         http_response_code(200); // OK
         echo json_encode([
