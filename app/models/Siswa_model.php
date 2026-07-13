@@ -1426,4 +1426,32 @@ class Siswa_model
         // 4. Eksekusi dan kembalikan nilai dalam bentuk array banyak baris
         return $this->db->resultSet();
     }
+
+    public function getSiswaByRombelEkstra($nama_rombel)
+    {
+        // Query JOIN antara data_induk dan rombel
+        $query = "SELECT 
+                    di.no_induk, 
+                    di.nisn, 
+                    di.nama_siswa, 
+                    di.jenis_kelamin, 
+                    di.tmpt_lhr, 
+                    di.tgl_lhr, 
+                    di.alamat, 
+                    di.no_tlp, 
+                    r.nama_rombel 
+                  FROM data_induk di 
+                  JOIN rombel r ON di.rombel = r.id_rombel 
+                  WHERE r.nama_rombel = :nama_rombel
+                  AND di.id_status = 1"; // Hanya siswa akti
+
+        // 2. Masukkan ke dalam fungsi query bawaan class Database Anda
+        $this->db->query($query);
+
+        // 3. Lakukan binding data agar aman dari SQL Injection
+        $this->db->bind(':nama_rombel', $nama_rombel);
+
+        // 4. Eksekusi dan kembalikan nilai dalam bentuk array banyak baris
+        return $this->db->resultSet();
+    }
 }

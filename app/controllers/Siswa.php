@@ -2008,4 +2008,90 @@ class Siswa extends Controller
         ], JSON_PRETTY_PRINT);
         exit;
     }
+
+    public function siswaEkskul()
+    {
+        // 1. Setup Header & CORS (Termasuk izin untuk X-API-KEY)
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-API-KEY');
+
+        // Handle request OPTIONS (Preflight dari browser)
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
+
+        // Wajib menyertakan header application/json
+        header('Content-Type: application/json; charset=utf-8');
+
+        // 2. Proteksi API KEY
+        $secretKey = "TUsmekisa1968";
+        $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
+
+        if ($requestApiKey !== $secretKey) {
+            http_response_code(401); // Unauthorized
+            echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! API Key tidak valid.']);
+            exit;
+        }
+
+        // 3. Tangkap parameter 'kelas' dari URL (?kelas=X-TKJ)
+        $kelas = isset($_GET['kelas']) ? trim($_GET['kelas']) : '';
+
+        if (empty($kelas)) {
+            http_response_code(400); // Bad Request
+            echo json_encode([
+                "status" => "error",
+                "message" => "Parameter 'kelas' wajib dikirimkan."
+            ]);
+            exit;
+        }
+
+        // 4. Panggil data dari model
+        $data_induk = $this->model('Siswa_model')->getSiswaByRombelTKJ($kelas);
+
+        // 5. Jika data kosong
+        if (!$data_induk) {
+            http_response_code(200);
+            echo json_encode([
+                "status" => "success",
+                "message" => "Data tidak ditemukan untuk kelas tersebut.",
+                "data" => []
+            ]);
+            exit;
+        }
+
+        // 6. Format array untuk menyesuaikan dengan struktur JSON yang di-request
+        // 6. Format array untuk menyesuaikan dengan struktur JSON yang di-request
+        $response_data = [];
+        foreach ($data_induk as $row) {
+            // Karena $row adalah Object, kita gunakan -> bukan []
+            $nis_asli = $row->no_induk;
+            $nis_potong = trim(explode('/', $nis_asli)[0]);
+
+            // Generate email berdasarkan nis/no_induk yang sudah dipotong
+            $email_generated = $nis_potong . '@tkjsmekisa.com';
+
+            $response_data[] = [
+                "nis"           => $nis_potong,
+                "nisn"          => $row->nisn,
+                "nama"          => $row->nama_siswa,
+                "jk"            => $row->jenis_kelamin,
+                "tempat_lahir"  => $row->tmpt_lhr,
+                "tanggal_lahir" => $row->tgl_lhr,
+                "alamat"        => $row->alamat,
+                "telepon"       => $row->no_tlp,
+                "email"         => $email_generated,
+                "rombel"        => $row->nama_rombel
+            ];
+        }
+        // 7. Tampilkan output JSON final
+        http_response_code(200); // OK
+        echo json_encode([
+            "status" => "success",
+            "total"  => count($response_data),
+            "data"   => $response_data
+        ], JSON_PRETTY_PRINT);
+        exit;
+    }
 }
