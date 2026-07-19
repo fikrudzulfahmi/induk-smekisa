@@ -49,52 +49,64 @@ class Siswa_model
 
         // Query dasar dengan JOIN dan filter status siswa aktif
         $baseQuery = "FROM {$this->table} di 
-                  LEFT JOIN jurusan j ON di.komp_keahlian = j.id_jurusan
-                  LEFT JOIN rombel r ON di.rombel = r.id_rombel
-                  LEFT JOIN status s ON di.id_status = s.id_status
-                  WHERE di.id_status = 1"; // <-- PENAMBAHAN KONDISI DI SINI
+              LEFT JOIN jurusan j ON di.komp_keahlian = j.id_jurusan
+              LEFT JOIN rombel r ON di.rombel = r.id_rombel
+              LEFT JOIN status s ON di.id_status = s.id_status
+              WHERE di.id_status = 1";
 
-        // Filter/Search
+        // Filter/Search — sekarang pakai bind parameter
         $searchQuery = "";
-        if (isset($request['search']['value']) && $request['search']['value'] != '') {
-            $searchValue = $request['search']['value'];
-            // Menggunakan AND karena WHERE sudah dipakai untuk status
+        $searchValue = isset($request['search']['value']) ? trim($request['search']['value']) : '';
+        $useSearch = ($searchValue !== '');
+
+        if ($useSearch) {
             $searchQuery = " AND (";
+            $parts = [];
             for ($i = 0; $i < count($columns); $i++) {
-                $searchQuery .= $columns[$i] . " LIKE '%" . $searchValue . "%'";
-                if ($i < count($columns) - 1) {
-                    $searchQuery .= " OR ";
-                }
+                $parts[] = $columns[$i] . " LIKE :kw{$i}";
             }
-            $searchQuery .= ")";
+            $searchQuery .= implode(" OR ", $parts) . ")";
         }
+
+        // Sorting — validasi index kolom agar tidak bisa disuntik nama kolom sembarangan
+        $orderQuery = "";
+        if (isset($request['order'][0]['column'])) {
+            $orderColumnIndex = (int) $request['order'][0]['column'];
+            if ($orderColumnIndex >= 0 && $orderColumnIndex < count($columns)) {
+                $orderColumn = $columns[$orderColumnIndex];
+                $orderDir = (isset($request['order'][0]['dir']) && strtolower($request['order'][0]['dir']) === 'desc')
+                    ? 'DESC' : 'ASC';
+                $orderQuery = " ORDER BY " . $orderColumn . " " . $orderDir;
+            }
+        }
+
+        // Pagination — pastikan integer murni
+        $limitQuery = "";
+        if (isset($request['start']) && isset($request['length']) && (int)$request['length'] != -1) {
+            $start = max(0, (int) $request['start']);
+            $length = max(0, (int) $request['length']);
+            $limitQuery = " LIMIT {$start}, {$length}";
+        }
+
+        // Helper untuk bind keyword ke statement yang sedang aktif
+        $bindSearch = function () use ($columns, $searchValue) {
+            $keyword = '%' . $searchValue . '%';
+            for ($i = 0; $i < count($columns); $i++) {
+                $this->db->bind(":kw{$i}", $keyword);
+            }
+        };
 
         // Query untuk menghitung total baris setelah difilter
         $this->db->query("SELECT COUNT(*) as total " . $baseQuery . $searchQuery);
+        if ($useSearch) $bindSearch();
         $filteredRows = $this->db->single()->total;
-
-        // Sorting
-        $orderQuery = "";
-        if (isset($request['order'])) {
-            $orderColumnIndex = $request['order'][0]['column'];
-            $orderColumn = $columns[$orderColumnIndex];
-            $orderDir = $request['order'][0]['dir'];
-            $orderQuery = " ORDER BY " . $orderColumn . " " . $orderDir;
-        }
-
-        // Pagination
-        $limitQuery = "";
-        if (isset($request['start']) && $request['length'] != -1) {
-            $start = $request['start'];
-            $length = $request['length'];
-            $limitQuery = " LIMIT " . $start . ", " . $length;
-        }
 
         // Query final untuk mengambil data
         $this->db->query("SELECT di.id_induk, di.nama_siswa, di.jenis_kelamin, di.no_induk, j.jurusan, r.nama_rombel, s.status " . $baseQuery . $searchQuery . $orderQuery . $limitQuery);
+        if ($useSearch) $bindSearch();
         $data = $this->db->resultSet();
 
-        // Total baris (hanya siswa aktif)
+        // Total baris (hanya siswa aktif, tanpa filter search)
         $this->db->query("SELECT COUNT(*) as total " . $baseQuery);
         $totalRows = $this->db->single()->total;
 
@@ -105,7 +117,6 @@ class Siswa_model
             "recordsFiltered" => intval($filteredRows),
             "data"            => $data
         ];
-
         return $output;
     }
     public function hitungJumlahSiswa()
