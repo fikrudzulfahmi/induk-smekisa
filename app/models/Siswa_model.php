@@ -1355,7 +1355,7 @@ class Siswa_model
                 r.tingkat AS tingkat
               FROM {$this->table} di
               LEFT JOIN rombel r ON di.rombel = r.id_rombel
-              WHERE di.nama_siswa LIKE :keyword OR di.no_induk LIKE :keyword
+              WHERE di.nama_siswa LIKE :keyword OR di.no_induk LIKE :keyword AND di.id_status=1
               LIMIT 10";
 
         $this->db->query($query);
