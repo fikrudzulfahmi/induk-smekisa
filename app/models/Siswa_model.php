@@ -1342,25 +1342,23 @@ class Siswa_model
     // Query untuk pencarian massal (Search)
     public function searchSiswa($keyword)
     {
-        // Gantilah nama kolom & tabel di bawah ini sesuai database asli Anda
         $query = "SELECT 
-                di.no_induk AS nis, 
-                di.nama_siswa AS name, 
-                di.tmpt_lhr AS birth_place, 
-                di.tgl_lhr AS birth_date, 
-                di.alamat AS address, 
-                di.nama_ayah AS guardian_name, 
-                di.no_hp AS guardian_phone, 
-                r.nama_rombel AS rombel,
-                r.tingkat AS tingkat
-              FROM {$this->table} di
-              LEFT JOIN rombel r ON di.rombel = r.id_rombel
-              WHERE di.nama_siswa LIKE :keyword OR di.no_induk LIKE :keyword AND di.id_status=1
-              LIMIT 10";
+            di.no_induk AS nis, 
+            di.nama_siswa AS name, 
+            di.tmpt_lhr AS birth_place, 
+            di.tgl_lhr AS birth_date, 
+            di.alamat AS address, 
+            di.nama_ayah AS guardian_name, 
+            di.no_hp AS guardian_phone, 
+            r.nama_rombel AS rombel,
+            r.tingkat AS tingkat
+          FROM {$this->table} di
+          LEFT JOIN rombel r ON di.rombel = r.id_rombel
+          WHERE (di.nama_siswa LIKE :keyword OR di.no_induk LIKE :keyword)
+            AND di.id_status = 1
+          LIMIT 10";
 
         $this->db->query($query);
-
-        // Menggunakan bind agar aman dari SQL Injection (sesuai standar PDO custom MVC)
         $this->db->bind(':keyword', "%$keyword%");
 
         return $this->db->resultSet();
