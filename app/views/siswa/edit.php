@@ -357,7 +357,10 @@
 
 
 
-
+                    </div>
+                    <div class="card-footer d-flex justify-content-end mt-3">
+                        <a href="javascript:history.back()" class="btn btn-secondary me-2">Kembali</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-floppy2-fill"></i> Simpan Perubahan</button>
                     </div>
                 </div>
             </form>
