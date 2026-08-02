@@ -12,13 +12,10 @@ $dbName     = DB_NAME;
 $localFile  = __DIR__ . '/temp_backup.sql';
 
 // ==========================================
-// 2. KONFIGURASI GOOGLE DRIVE (DENGAN TIMESTAMP)
+// 2. KONFIGURASI GOOGLE DRIVE WEBHOOK
 // ==========================================
-$clientId     = G_CLIENT_ID;
-$clientSecret = G_CLIENT_SECRET;
-$refreshToken = G_REFRESH_TOKEN;
-$folderId     = trim(G_FOLDER_ID);
-
+$webhookUrl = defined('G_WEBHOOK_URL') ? G_WEBHOOK_URL : '';
+$secretKey  = defined('G_SECRET_KEY') ? G_SECRET_KEY : 'TUsmekisa1968';
 
 date_default_timezone_set('Asia/Jakarta');
 // Menambahkan tanggal dan jam pada nama file
@@ -36,111 +33,52 @@ if ($returnVar !== 0) {
 }
 
 // ==========================================
-// 4. GET ACCESS TOKEN GOOGLE
+// 4. UPLOAD FILE KE WEBHOOK (GOOGLE SCRIPT)
 // ==========================================
-$ch = curl_init("https://oauth2.googleapis.com/token");
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-    'client_id'     => $clientId,
-    'client_secret' => $clientSecret,
-    'refresh_token' => $refreshToken,
-    'grant_type'    => 'refresh_token'
-]));
+$sqlScript = file_get_contents($localFile);
+$base64Data = base64_encode($sqlScript);
+
+$postData = http_build_query([
+    'secret'      => $secretKey,
+    'filename'    => $driveName,
+    'file_base64' => $base64Data
+]);
+
+if (empty($webhookUrl)) {
+    die("Gagal: URL Webhook (G_WEBHOOK_URL) belum diatur di credentials.php.\n");
+}
+
+$ch = curl_init($webhookUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = json_decode(curl_exec($ch), true);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+curl_setopt($ch, CURLOPT_TIMEOUT, 300); // Timeout 5 menit untuk backup besar
+
+$response = curl_exec($ch);
+$httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
-if (!isset($response['access_token'])) {
-    die("Gagal mendapatkan Access Token. Periksa credentials.\n");
-}
-$accessToken = $response['access_token'];
+$resData = json_decode($response, true);
 
 // ==========================================
-// 5. CARI & INGAT ID FILE LAMA (MENGGUNAKAN CONTAINS)
-// ==========================================
-// Mencari file yang mengandung kata 'backup_induk_' agar file kemarin (beda tanggal) tetap terdeteksi
-$query = "name contains 'backup_induk_' and '{$folderId}' in parents and trashed=false";
-$urlSearch = "https://www.googleapis.com/drive/v3/files?q=" . urlencode($query) . "&fields=files(id,name)";
-
-$chSearch = curl_init($urlSearch);
-curl_setopt($chSearch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($chSearch, CURLOPT_HTTPHEADER, ["Authorization: Bearer {$accessToken}"]);
-$searchResult = json_decode(curl_exec($chSearch), true);
-curl_close($chSearch);
-
-// Simpan daftar ID file lama di memori array
-$oldFileIds = [];
-if (isset($searchResult['files']) && count($searchResult['files']) > 0) {
-    foreach ($searchResult['files'] as $file) {
-        $oldFileIds[] = $file['id'];
-    }
-}
-
-// ==========================================
-// 6. UPLOAD FILE BARU (MULTIPART)
-// ==========================================
-$boundary = "BNDR_" . md5(time());
-$metadata = json_encode([
-    'name'    => $driveName,
-    'parents' => [$folderId]
-]);
-
-$body = "--" . $boundary . "\r\n" .
-    "Content-Type: application/json; charset=UTF-8\r\n\r\n" .
-    $metadata . "\r\n" .
-    "--" . $boundary . "\r\n" .
-    "Content-Type: application/x-sql\r\n\r\n" .
-    file_get_contents($localFile) . "\r\n" .
-    "--" . $boundary . "--";
-
-$chUpload = curl_init("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart");
-curl_setopt($chUpload, CURLOPT_POST, true);
-curl_setopt($chUpload, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($chUpload, CURLOPT_POSTFIELDS, $body);
-curl_setopt($chUpload, CURLOPT_HTTPHEADER, [
-    "Authorization: Bearer {$accessToken}",
-    "Content-Type: multipart/related; boundary=" . $boundary,
-    "Content-Length: " . strlen($body)
-]);
-
-$uploadResponse = curl_exec($chUpload);
-$uploadStatus   = curl_getinfo($chUpload, CURLINFO_HTTP_CODE);
-curl_close($chUpload);
-
-$uploadResult = json_decode($uploadResponse, true);
-
-// ==========================================
-// 7. EVALUASI HASIL & EKSEKUSI HAPUS LAMA
+// 5. EVALUASI HASIL & CATAT LOG
 // ==========================================
 $statusLog = 'gagal';
-$keteranganLog = 'Gagal mengunggah file baru ke Google Drive.';
+$keteranganLog = 'Gagal mengunggah file baru ke Webhook Google Drive.';
 
-// JIKA UPLOAD SUKSES
-if ($uploadStatus === 200 && isset($uploadResult['id'])) {
-    echo "Sukses! Backup baru ({$driveName}) terunggah. ID: " . $uploadResult['id'] . "\n";
+if ($httpStatus == 200 && $resData && isset($resData['status']) && $resData['status'] === 'success') {
+    echo "Sukses! Backup baru ({$driveName}) terunggah.\n";
+    if (!empty($resData['deleted'])) {
+        echo "File lama yang dihapus: " . implode(", ", $resData['deleted']) . "\n";
+    }
     $statusLog = 'sukses';
     $keteranganLog = "Backup berhasil diunggah: {$driveName}";
-
-    // BARULAH KITA HAPUS FILE LAMANYA DI SINI
-    if (!empty($oldFileIds)) {
-        foreach ($oldFileIds as $oldId) {
-            $chDel = curl_init("https://www.googleapis.com/drive/v3/files/{$oldId}");
-            curl_setopt($chDel, CURLOPT_CUSTOMREQUEST, 'DELETE');
-            curl_setopt($chDel, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($chDel, CURLOPT_HTTPHEADER, ["Authorization: Bearer {$accessToken}"]);
-            curl_exec($chDel);
-            curl_close($chDel);
-            echo "File lama (ID: {$oldId}) sukses dihapus untuk me-replace.\n";
-        }
-    }
-}
-// JIKA UPLOAD GAGAL
-else {
-    echo "Gagal mengunggah file baru ke Google Drive.\n";
-    if ($uploadStatus !== 200) {
-        $keteranganLog = "Gagal Drive API (Status: $uploadStatus). File lama TETAP AMAN.";
-    }
-    echo "Pesan: " . $uploadResponse . "\n";
+} else {
+    echo "Gagal mengunggah file baru ke Google Drive via Webhook.\n";
+    $errorMsg = $resData['message'] ?? $response;
+    $keteranganLog = "Gagal via Webhook: " . substr($errorMsg, 0, 150);
+    echo "Pesan: " . $errorMsg . "\n";
 }
 
 // Hapus file SQL sementara di server lokal
@@ -149,7 +87,7 @@ if (file_exists($localFile)) {
 }
 
 // ==========================================
-// 8. CATAT LOG KE DATABASE
+// 6. CATAT LOG KE DATABASE
 // ==========================================
 try {
     $dsn = "mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4";
@@ -159,12 +97,14 @@ try {
             VALUES (1, :keterangan, :status, :waktu)";
     $stmt = $pdo->prepare($sql);
 
-    // PERBAIKAN: Masukkan waktu saat ini menggunakan fungsi date() PHP
+    // Masukkan waktu saat ini menggunakan fungsi date() PHP
     $stmt->execute([
         ':keterangan' => $keteranganLog,
         ':status'     => $statusLog,
         ':waktu'      => date('Y-m-d H:i:s')
     ]);
+    
+    echo "Status log berhasil dicatat ke database.\n";
 } catch (PDOException $e) {
     echo "Gagal mencatat status ke database: " . $e->getMessage() . "\n";
 }

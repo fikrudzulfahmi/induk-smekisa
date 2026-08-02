@@ -57,6 +57,13 @@ $current_page = $url_segments[1] ?: 'dashboard';
                             <span>Activity Log</span>
                         </a>
                     </li>
+
+                    <li class="sidebar-item <?= ($current_page == 'backup') ? 'active' : '' ?>">
+                        <a href="<?= BASEURL; ?>/backup" class='sidebar-link'>
+                            <i class="bi bi-hdd-fill"></i>
+                            <span>Backup & Restore</span>
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if (Auth::checkRole('admin') || Auth::checkRole('waka')) : ?>
