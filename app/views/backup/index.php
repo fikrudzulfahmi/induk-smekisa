@@ -23,11 +23,11 @@
                             <h4 class="card-title">Backup Database</h4>
                         </div>
                         <div class="card-body">
-                            <p>Fitur ini memungkinkan Anda untuk mencadangkan (backup) seluruh isi database. Anda dapat mengunduhnya secara langsung ke perangkat ini atau memicu sinkronisasi ke Google Drive (menggunakan mekanisme webhook).</p>
+                            <p>Fitur ini memungkinkan Anda untuk mencadangkan (backup) seluruh isi database dan mengunduhnya secara langsung ke perangkat ini.</p>
                             
                             <?php if (!empty($data['last_backup'])): ?>
                                 <div class="alert alert-light-info color-info">
-                                    <i class="bi bi-info-circle"></i> <strong>Status Backup Terakhir (Cronjob/Webhook):</strong><br>
+                                    <i class="bi bi-info-circle"></i> <strong>Status Backup Otomatis Terakhir (Cronjob):</strong><br>
                                     <strong>Waktu:</strong> <?= $data['last_backup']['created_at'] ?><br>
                                     <strong>Status:</strong> <span class="badge bg-<?= $data['last_backup']['status'] == 'sukses' ? 'success' : 'danger' ?>"><?= strtoupper($data['last_backup']['status']) ?></span><br>
                                     <strong>Keterangan:</strong> <?= $data['last_backup']['keterangan'] ?>
@@ -37,10 +37,6 @@
                             <div class="d-flex justify-content-start mt-4 gap-2">
                                 <a href="<?= BASEURL; ?>/backup/download" class="btn btn-primary" onclick="return confirm('Mulai mengunduh file backup database (.sql) sekarang? Proses ini akan memakan waktu sejenak.')">
                                     <i class="bi bi-download"></i> Download Backup (SQL)
-                                </a>
-                                
-                                <a href="<?= BASEURL; ?>/backup/triggerDrive" class="btn btn-outline-success" onclick="return confirm('Picu proses pengiriman file backup ke Google Drive via webhook sekarang?')">
-                                    <i class="bi bi-cloud-upload"></i> Test Kirim ke Google Drive
                                 </a>
                             </div>
                         </div>

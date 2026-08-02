@@ -80,24 +80,7 @@ class Backup extends Controller
         }
     }
 
-    public function triggerDrive()
-    {
-        $scriptPath = realpath(__DIR__ . '/../../cronjob/backup.php');
-        
-        if ($scriptPath && file_exists($scriptPath)) {
-            // Jalankan via PHP CLI secara sinkron agar bisa dapat balikan status
-            exec("php " . escapeshellarg($scriptPath), $output, $returnVar);
-            
-            $outputStr = implode("\\n", $output);
-            $outputStr = addslashes($outputStr); // Escape untuk JS alert
 
-            $this->logActivity('Trigger Auto-Backup', 'Admin memicu cronjob backup secara manual.');
-            echo "<script>alert('Hasil Eksekusi:\\n" . $outputStr . "'); window.location.href='".BASEURL."/backup';</script>";
-        } else {
-            echo "<script>alert('File script backup cronjob tidak ditemukan.'); window.location.href='".BASEURL."/backup';</script>";
-        }
-        exit;
-    }
 
     public function restore()
     {
