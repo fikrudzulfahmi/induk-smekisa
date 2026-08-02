@@ -48,16 +48,44 @@ if (empty($webhookUrl)) {
     die("Gagal: URL Webhook (G_WEBHOOK_URL) belum diatur di credentials.php.\n");
 }
 
-$ch = curl_init($webhookUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-curl_setopt($ch, CURLOPT_TIMEOUT, 300); // Timeout 5 menit untuk backup besar
+    // --- 2. Eksekusi Curl dengan penanganan Redirect (302) Google Apps Script ---
+    $ch = curl_init($webhookUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+    curl_setopt($ch, CURLOPT_HEADER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false); // Handle redirect secara manual
+    curl_setopt($ch, CURLOPT_TIMEOUT, 300); // Timeout 5 menit
 
-$response = curl_exec($ch);
-$httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
+    $response = curl_exec($ch);
+    $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+    $headers = substr($response, 0, $headerSize);
+    $body = substr($response, $headerSize);
+
+    // Google Apps Script merespons POST dengan 302 Redirect ke script.googleusercontent.com
+    if ($httpStatus == 302 || $httpStatus == 301 || $httpStatus == 303) {
+        if (preg_match('/^Location:\s*(.+)$/mi', $headers, $matches)) {
+            $redirectUrl = trim($matches[1]);
+            
+            // Lakukan GET request ke URL redirect
+            $ch2 = curl_init($redirectUrl);
+            curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch2, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch2, CURLOPT_TIMEOUT, 300);
+            
+            $body = curl_exec($ch2);
+            $httpStatus = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
+            curl_close($ch2);
+        }
+    }
+    
+    if (curl_errno($ch)) {
+        throw new Exception("Curl Error: " . curl_error($ch));
+    }
+    curl_close($ch);
+
+    $response = $body;
 
 $resData = json_decode($response, true);
 
