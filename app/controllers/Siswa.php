@@ -1721,65 +1721,90 @@ class Siswa extends Controller
         exit;
     }
 
-    public function apiSiswaPkl()
+    // ==========================================
+    // 1. ENDPOINT BARU: Ambil Daftar Kelas
+    // Akses: GET /siswa/apiKelasPkl
+    // ==========================================
+    public function apiKelasPkl()
     {
-        // ==========================================
-        // 1. PENGATURAN CORS (Cross-Origin)
-        // ==========================================
-        header('Access-Control-Allow-Origin: *'); // Akan lebih aman jika diganti jadi 'https://siswa-pkl.ingintau.my.id'
-        header('Access-Control-Allow-Methods: GET, OPTIONS'); // WAJIB tambahkan OPTIONS
-        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-API-KEY'); // WAJIB daftarkan X-API-KEY
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-API-KEY');
 
-        // ==========================================
-        // 2. TANGKAP PREFLIGHT REQUEST DARI BROWSER
-        // ==========================================
-        // Jika browser cuma nanya izin (OPTIONS), langsung beri status OK (200) lalu hentikan.
         if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
             http_response_code(200);
             exit();
         }
-
-        // Set tipe konten untuk response sebenarnya
         header('Content-Type: application/json');
 
-        // ==========================================
-        // 3. SISTEM KEAMANAN: CEK API KEY
-        // ==========================================
         $secretKey = "TUsmekisa1968";
-
-        // PHP membaca custom header 'X-API-KEY' sebagai 'HTTP_X_API_KEY'
         $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
 
-        // Jika kunci tidak cocok atau kosong, TENDANG!
         if ($requestApiKey !== $secretKey) {
-            http_response_code(401); // Kode 401: Unauthorized
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Akses Ditolak! API Key tidak valid atau tidak ditemukan.'
-            ]);
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'API Key tidak valid.']);
             exit;
         }
-        // ==========================================
 
-        // Jika kunci cocok, baru jalankan model
-        $data = $this->model('Siswa_model')->getSiswaForPkl();
+        $data = $this->model('Siswa_model')->getKelasTsm();
 
-        // Format output JSON
-        if ($data) {
-            echo json_encode([
-                'status' => 'success',
-                'data' => $data
-            ]);
-        } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Data siswa PKL tidak ditemukan',
-                'data' => []
-            ]);
-        }
-
+        echo json_encode([
+            'status' => 'success',
+            'data' => $data
+        ]);
         exit;
     }
+
+    // ==========================================
+    // 2. ENDPOINT DIPERBAIKI: Ambil/Update Siswa
+    // Akses: GET/POST /siswa/apiSiswaPkl
+    // ==========================================
+    public function apiSiswaPkl()
+    {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-API-KEY');
+
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
+        header('Content-Type: application/json');
+
+        $secretKey = "TUsmekisa1968";
+        $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
+
+        if ($requestApiKey !== $secretKey) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'API Key tidak valid.']);
+            exit;
+        }
+
+        $filters = [];
+
+        // Jika filter GET by Kelas spesifik (misal: ?kelas=11 TSM A)
+        if (isset($_GET['kelas'])) {
+            $filters['kelas'] = $_GET['kelas'];
+        }
+
+        // Jika filter POST by Array NIS
+        $inputJSON = file_get_contents('php://input');
+        $input = json_decode($inputJSON, TRUE);
+
+        if (isset($input['nis_list']) && is_array($input['nis_list'])) {
+            $filters['nis_list'] = $input['nis_list'];
+        }
+
+        $data = $this->model('Siswa_model')->getSiswaForPkl($filters);
+
+        if ($data) {
+            echo json_encode(['status' => 'success', 'data' => $data]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Data siswa tidak ditemukan', 'data' => []]);
+        }
+        exit;
+    }
+
 
     public function apiSearchSiswa()
     {

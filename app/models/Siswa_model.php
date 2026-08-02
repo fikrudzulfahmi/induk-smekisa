@@ -1317,27 +1317,52 @@ class Siswa_model
         return $this->db->resultSet();
     }
 
-    public function getSiswaForPkl()
+    // 1. FUNGSI BARU: Mengambil daftar kelas jurusan TSM
+    public function getKelasTsm()
     {
-        // Query untuk mengambil siswa Aktif (id_status = 1), 
-        // jurusan Teknik Sepeda Motor, dan tingkat XI
-        $query = "SELECT 
-                    di.nama_siswa AS nama, 
-                    di.no_induk AS nis, 
-                    di.nisn AS nisn, 
-                    r.nama_rombel AS kelas, 
-                    di.alamat AS alamat, 
-                    di.no_hp AS nomor_ponsel
-                  FROM {$this->table} di
-                  LEFT JOIN jurusan j ON di.komp_keahlian = j.id_jurusan
-                  LEFT JOIN rombel r ON di.rombel = r.id_rombel
-                  WHERE di.id_status = 1 
-                    AND j.jurusan LIKE '%Teknik Sepeda Motor%' 
-                    AND r.tingkat = '11'";
+        $query = "SELECT r.nama_rombel AS kelas, r.tingkat
+              FROM rombel r
+              LEFT JOIN jurusan j ON r.id_jurusan = j.id_jurusan
+              WHERE j.jurusan LIKE '%Teknik Sepeda Motor%'
+              ORDER BY r.tingkat ASC, r.nama_rombel ASC";
 
         $this->db->query($query);
         return $this->db->resultSet();
     }
+
+    // 2. FUNGSI DIPERBAIKI: Mengambil Siswa secara dinamis
+    public function getSiswaForPkl($filters = [])
+    {
+        $query = "SELECT 
+                di.nama_siswa AS nama, 
+                di.no_induk AS nis, 
+                di.nisn AS nisn, 
+                r.nama_rombel AS kelas, 
+                di.alamat AS alamat, 
+                di.no_hp AS nomor_ponsel
+              FROM {$this->table} di
+              LEFT JOIN jurusan j ON di.komp_keahlian = j.id_jurusan
+              LEFT JOIN rombel r ON di.rombel = r.id_rombel
+              WHERE di.id_status = 1 
+                AND j.jurusan LIKE '%Teknik Sepeda Motor%'";
+
+        // Filter by Nama Kelas secara spesifik (misal: "11 TSM A")
+        if (isset($filters['kelas']) && !empty($filters['kelas'])) {
+            $kelas = htmlspecialchars($filters['kelas']);
+            $query .= " AND r.nama_rombel = '$kelas'";
+        }
+
+        // Filter by Array NIS (Digunakan saat Sinkronisasi Update)
+        if (isset($filters['nis_list']) && is_array($filters['nis_list']) && count($filters['nis_list']) > 0) {
+            $nis_clean = array_map('htmlspecialchars', $filters['nis_list']);
+            $nis_string = "'" . implode("','", $nis_clean) . "'";
+            $query .= " AND di.no_induk IN ($nis_string)";
+        }
+
+        $this->db->query($query);
+        return $this->db->resultSet();
+    }
+
 
     // Query untuk pencarian massal (Search)
     public function searchSiswa($keyword)
