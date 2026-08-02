@@ -134,10 +134,10 @@
                     "orderable": false,
                     "width": "320px", // Sesuaikan lebar agar tombol pas
                     "render": function(data, type, row) {
-                        // 1. Tombol Utama (Selalu Tampil)
                         let buttons = `<a href="<?= BASEURL; ?>/rombel/anggota/${data}" class="btn btn-sm btn-info me-1" title="Lihat Anggota"><i class="bi bi-people-fill"></i> Anggota</a>`;
 
-                        buttons += `<a href="<?= BASEURL; ?>/rombel/cetak_pdf/${data}" class="btn btn-sm btn-success me-1" target="_blank" title="Cetak Presensi"><i class="bi bi-file-earmark-pdf"></i> Cetak Presensi</a>`;
+                        buttons += `<a href="<?= BASEURL; ?>/rombel/cetak_pdf/${data}" class="btn btn-sm btn-success me-1" target="_blank" title="Cetak Presensi"><i class="bi bi-file-earmark-pdf"></i> Cetak PDF</a>`;
+                        buttons += `<a href="<?= BASEURL; ?>/rombel/exportAbsenExcel/${data}" class="btn btn-sm btn-success me-1" target="_blank" title="Cetak Absen Excel"><i class="bi bi-file-earmark-excel"></i> Cetak Excel</a>`;
 
                         // 2. Tombol Dropdown (Hanya untuk Admin)
                         if (<?= $isAdmin ? 'true' : 'false' ?>) {
@@ -148,6 +148,7 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-custom">
                                 <li><a class="dropdown-item" href="<?= BASEURL; ?>/rombel/cetak_pdf/${data}" target="_blank"><i class="bi bi-file-earmark-pdf me-2"></i>Cetak Presensi</a></li>
+                                <li><a class="dropdown-item" href="<?= BASEURL; ?>/rombel/exportAbsenExcel/${data}" target="_blank"><i class="bi bi-file-earmark-excel me-2"></i>Cetak Absen Excel</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="<?= BASEURL; ?>/rombel/edit/${data}"><i class="bi bi-pencil-fill me-2"></i>Edit</a></li>
                                 <li><hr class="dropdown-divider"></li>

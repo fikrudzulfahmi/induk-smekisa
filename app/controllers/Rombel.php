@@ -373,6 +373,98 @@ class Rombel extends Controller
         $writer->save('php://output');
         exit;
     }
+
+    public function exportAbsenExcel($id)
+    {
+        if (!is_numeric($id) || $id <= 0) {
+            $this->block();
+        }
+
+        $rombel = $this->model('Rombel_model')->getRombelByIdWithDetails($id);
+        if (!$rombel) {
+            $this->block();
+        }
+
+        $siswa_list = $this->model('Siswa_model')->getSiswaAktifByRombelId($id);
+        $tahun_pelajaran_aktif = $this->model('Rombel_model')->getActiveTahunPelajaran();
+        $tp = $tahun_pelajaran_aktif ? $tahun_pelajaran_aktif->tp : date('Y') . '/' . (date('Y') + 1);
+        $nama_rombel = $rombel->nama_rombel ?? 'Kelas Tidak Diketahui';
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Absensi ' . preg_replace('/[^A-Za-z0-9]/', '_', substr($nama_rombel, 0, 20)));
+
+        $lastHeaderColumn = 'D'; // NO, NAMA SISWA, NIS, L/P
+        
+        $sheet->mergeCells('A1:D1');
+        $sheet->setCellValue('A1', 'DAFTAR ABSENSI KELAS ' . $nama_rombel);
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $sheet->mergeCells('A2:D2');
+        $sheet->setCellValue('A2', 'TAHUN PELAJARAN ' . $tp);
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
+        $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Blank line 3
+        $sheet->getRowDimension(3)->setRowHeight(20);
+
+        $headerRow = 4;
+        $headers = ['NO', 'NAMA SISWA', 'NIS', 'L/P'];
+        $sheet->fromArray($headers, NULL, 'A' . $headerRow);
+
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9EAD3']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+        ];
+        $sheet->getStyle('A' . $headerRow . ':D' . $headerRow)->applyFromArray($headerStyle);
+        $sheet->getRowDimension($headerRow)->setRowHeight(25);
+
+        $rowNum = $headerRow + 1;
+        $no = 1;
+        if (!empty($siswa_list)) {
+            foreach ($siswa_list as $siswa) {
+                $jk = ($siswa->jenis_kelamin == 'Laki-Laki') ? 'L' : (($siswa->jenis_kelamin == 'Perempuan') ? 'P' : '-');
+
+                $sheet->setCellValue('A' . $rowNum, $no++);
+                $sheet->setCellValue('B' . $rowNum, $siswa->nama_siswa);
+                $sheet->setCellValueExplicit('C' . $rowNum, $siswa->no_induk, DataType::TYPE_STRING);
+                $sheet->setCellValue('D' . $rowNum, $jk);
+
+                $sheet->getStyle('A' . $rowNum . ':D' . $rowNum)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                $sheet->getStyle('A' . $rowNum . ':D' . $rowNum)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+                $sheet->getStyle('A' . $rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('C' . $rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                $sheet->getStyle('D' . $rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                $rowNum++;
+            }
+        } else {
+            $sheet->mergeCells('A' . $rowNum . ':D' . $rowNum);
+            $sheet->setCellValue('A' . $rowNum, 'Tidak ada siswa aktif di rombel ini.');
+            $sheet->getStyle('A' . $rowNum . ':D' . $rowNum)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        }
+
+        $sheet->getColumnDimension('A')->setWidth(5);
+        $sheet->getColumnDimension('B')->setWidth(40);
+        $sheet->getColumnDimension('C')->setWidth(15);
+        $sheet->getColumnDimension('D')->setWidth(10);
+
+        $writer = new Xlsx($spreadsheet);
+        $nama_rombel_safe = preg_replace('/[^A-Za-z0-9_\-]/', '_', $nama_rombel);
+        $filename = 'Absensi_' . $nama_rombel_safe . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
+        header('Cache-Control: max-age=0');
+
+        $this->logActivity('EXPORT', "Admin mengekspor Absensi ke Excel untuk Rombel: {$nama_rombel} (ID: {$id}).");
+
+        $writer->save('php://output');
+        exit;
+    }
     /**
      * Menangkap request POST Kenaikan Kelas
      */
