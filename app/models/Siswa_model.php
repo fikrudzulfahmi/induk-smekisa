@@ -1384,7 +1384,7 @@ class Siswa_model
           LIMIT 10";
 
         $this->db->query($query);
-        $this->db->bind(':keyword', "%$keyword%");
+        $this->db->bind(':keyword', "$keyword%");
 
         return $this->db->resultSet();
     }
