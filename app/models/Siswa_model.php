@@ -1364,27 +1364,34 @@ class Siswa_model
     }
 
 
-    // Query untuk pencarian massal (Search)
     public function searchSiswa($keyword)
     {
-        $query = "SELECT 
-            di.no_induk AS nis, 
-            di.nama_siswa AS name, 
-            di.tmpt_lhr AS birth_place, 
-            di.tgl_lhr AS birth_date, 
-            di.alamat AS address, 
-            di.nama_ayah AS guardian_name, 
-            di.no_hp AS guardian_phone, 
-            r.nama_rombel AS rombel,
-            r.tingkat AS tingkat
-          FROM {$this->table} di
-          LEFT JOIN rombel r ON di.rombel = r.id_rombel
-          WHERE (di.nama_siswa LIKE :keyword OR di.no_induk LIKE :keyword)
-            AND di.id_status = 1
-          LIMIT 10";
+        // Menggunakan UNION untuk mengoptimalkan penggunaan Index pada nama_siswa dan no_induk
+        $query = "
+            (SELECT 
+                di.no_induk AS nis, di.nama_siswa AS name, di.tmpt_lhr AS birth_place, 
+                di.tgl_lhr AS birth_date, di.alamat AS address, di.nama_ayah AS guardian_name, 
+                di.no_hp AS guardian_phone, r.nama_rombel AS rombel, r.tingkat AS tingkat
+            FROM {$this->table} di
+            LEFT JOIN rombel r ON di.rombel = r.id_rombel
+            WHERE di.nama_siswa LIKE :keyword AND di.id_status = 1
+            LIMIT 10)
+            UNION
+            (SELECT 
+                di.no_induk AS nis, di.nama_siswa AS name, di.tmpt_lhr AS birth_place, 
+                di.tgl_lhr AS birth_date, di.alamat AS address, di.nama_ayah AS guardian_name, 
+                di.no_hp AS guardian_phone, r.nama_rombel AS rombel, r.tingkat AS tingkat
+            FROM {$this->table} di
+            LEFT JOIN rombel r ON di.rombel = r.id_rombel
+            WHERE di.no_induk LIKE :keyword2 AND di.id_status = 1
+            LIMIT 10)
+            LIMIT 10
+        ";
 
         $this->db->query($query);
+        // Bind dua kali karena kita memecah menjadi UNION
         $this->db->bind(':keyword', "$keyword%");
+        $this->db->bind(':keyword2', "$keyword%");
 
         return $this->db->resultSet();
     }
