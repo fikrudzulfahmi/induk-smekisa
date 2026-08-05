@@ -1364,18 +1364,23 @@ class Siswa_model
     }
 
 
-    public function searchSiswa($keyword)
+    public function searchSiswa($keyword, $tingkat = '')
     {
         // Prioritaskan filter id_status = 1 dan pencarian pada subquery 
         // sebelum melakukan LEFT JOIN untuk optimasi performa
+        $tingkatQuery = "";
+        if (!empty($tingkat)) {
+            $tingkatQuery = " AND di.rombel IN (SELECT id_rombel FROM rombel WHERE tingkat = :tingkat) ";
+        }
+
         $query = "
             SELECT 
                 di.no_induk AS nis, di.nama_siswa AS name, di.tmpt_lhr AS birth_place, 
                 di.tgl_lhr AS birth_date, di.alamat AS address, di.nama_ayah AS guardian_name, 
                 di.no_hp AS guardian_phone, r.nama_rombel AS rombel, r.tingkat AS tingkat
             FROM (
-                SELECT * FROM {$this->table}
-                WHERE id_status = 1 
+                SELECT * FROM {$this->table} di
+                WHERE id_status = 1 $tingkatQuery
                 AND (nama_siswa LIKE :keyword OR no_induk LIKE :keyword)
                 LIMIT 20
             ) di
@@ -1385,6 +1390,9 @@ class Siswa_model
         $this->db->query($query);
         // Menggunakan wildcard di awal dan akhir agar pencarian lebih fleksibel
         $this->db->bind(':keyword', "%$keyword%");
+        if (!empty($tingkat)) {
+            $this->db->bind(':tingkat', $tingkat);
+        }
 
         return $this->db->resultSet();
     }

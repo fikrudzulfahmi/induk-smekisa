@@ -1831,6 +1831,7 @@ class Siswa extends Controller
 
         // Tangkap keyword pencarian (?q=nama_atau_nis)
         $keyword = isset($_GET['q']) ? $_GET['q'] : '';
+        $tingkat = isset($_GET['tingkat']) ? $_GET['tingkat'] : '';
 
         if (empty($keyword)) {
             http_response_code(400);
@@ -1838,7 +1839,7 @@ class Siswa extends Controller
             exit;
         }
 
-        $data = $this->model('Siswa_model')->searchSiswa($keyword);
+        $data = $this->model('Siswa_model')->searchSiswa($keyword, $tingkat);
 
         echo json_encode([
             'status' => $data ? 'success' : 'error',
