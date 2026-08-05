@@ -1366,32 +1366,25 @@ class Siswa_model
 
     public function searchSiswa($keyword)
     {
-        // Menggunakan UNION untuk mengoptimalkan penggunaan Index pada nama_siswa dan no_induk
+        // Prioritaskan filter id_status = 1 dan pencarian pada subquery 
+        // sebelum melakukan LEFT JOIN untuk optimasi performa
         $query = "
-            (SELECT 
+            SELECT 
                 di.no_induk AS nis, di.nama_siswa AS name, di.tmpt_lhr AS birth_place, 
                 di.tgl_lhr AS birth_date, di.alamat AS address, di.nama_ayah AS guardian_name, 
                 di.no_hp AS guardian_phone, r.nama_rombel AS rombel, r.tingkat AS tingkat
-            FROM {$this->table} di
+            FROM (
+                SELECT * FROM {$this->table}
+                WHERE id_status = 1 
+                AND (nama_siswa LIKE :keyword OR no_induk LIKE :keyword)
+                LIMIT 20
+            ) di
             LEFT JOIN rombel r ON di.rombel = r.id_rombel
-            WHERE di.id_status = 1 AND di.nama_siswa LIKE :keyword
-            LIMIT 10)
-            UNION
-            (SELECT 
-                di.no_induk AS nis, di.nama_siswa AS name, di.tmpt_lhr AS birth_place, 
-                di.tgl_lhr AS birth_date, di.alamat AS address, di.nama_ayah AS guardian_name, 
-                di.no_hp AS guardian_phone, r.nama_rombel AS rombel, r.tingkat AS tingkat
-            FROM {$this->table} di
-            LEFT JOIN rombel r ON di.rombel = r.id_rombel
-            WHERE di.id_status = 1 AND di.no_induk LIKE :keyword2
-            LIMIT 10)
-            LIMIT 10
         ";
 
         $this->db->query($query);
-        // Bind dua kali karena kita memecah menjadi UNION
-        $this->db->bind(':keyword', "$keyword%");
-        $this->db->bind(':keyword2', "$keyword%");
+        // Menggunakan wildcard di awal dan akhir agar pencarian lebih fleksibel
+        $this->db->bind(':keyword', "%$keyword%");
 
         return $this->db->resultSet();
     }
