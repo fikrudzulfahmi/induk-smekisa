@@ -1374,7 +1374,7 @@ class Siswa_model
                 di.no_hp AS guardian_phone, r.nama_rombel AS rombel, r.tingkat AS tingkat
             FROM {$this->table} di
             LEFT JOIN rombel r ON di.rombel = r.id_rombel
-            WHERE di.nama_siswa LIKE :keyword AND di.id_status = 1
+            WHERE di.id_status = 1 AND di.nama_siswa LIKE :keyword
             LIMIT 10)
             UNION
             (SELECT 
@@ -1383,7 +1383,7 @@ class Siswa_model
                 di.no_hp AS guardian_phone, r.nama_rombel AS rombel, r.tingkat AS tingkat
             FROM {$this->table} di
             LEFT JOIN rombel r ON di.rombel = r.id_rombel
-            WHERE di.no_induk LIKE :keyword2 AND di.id_status = 1
+            WHERE di.id_status = 1 AND di.no_induk LIKE :keyword2
             LIMIT 10)
             LIMIT 10
         ";
