@@ -13,9 +13,16 @@ RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
 
 # ===== PENGUATAN EXPORT EXCEL (jangan dihapus) =====
 # Hosting sering mengunci memory_limit sehingga ini_set() di kode tidak berhasil.
-# Naikkan lewat .htaccess agar export data besar (98 kolom x ribuan siswa)
+# Naikkan lewat .htaccess (berlaku untuk mod_php) + .user.ini (berlaku untuk
+# PHP-FPM/LSAPI cPanel) agar export data besar (98 kolom x ribuan siswa)
 # tidak terpotong / file XLSX tidak rusak saat dibuka.
 <IfModule mod_php.c>
+    php_value memory_limit 1024M
+    php_value max_execution_time 600
+    php_value post_max_size 128M
+    php_value upload_max_filesize 128M
+</IfModule>
+<IfModule lsapi_module>
     php_value memory_limit 1024M
     php_value max_execution_time 600
     php_value post_max_size 128M
