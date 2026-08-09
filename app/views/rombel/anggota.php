@@ -98,7 +98,7 @@
                             <ul class="mb-2 s-14" style="padding-left: 20px;">
                                 <li>Gunakan file berformat berkas <b>.xlsx</b> atau <b>.xls</b>.</li>
                                 <li>Sistem akan mendeteksi isi Rombel dan Kompetensi Keahlian secara otomatis.</li>
-                                <li>Tipe data tanggal wajib diatur sebagai format "Text" di Excel dengan pola <code>YYYY-MM-DD</code>.</li>
+                                <li>Kolom tanggal otomatis dinormalisasi — boleh diisi format <code>YYYY-MM-DD</code>, <code>YYYY/MM/DD</code>, <code>DD/MM/YYYY</code>, atau tanggal Excel biasa.</li>
                             </ul>
                             <hr>
                             <p class="mb-0 s-14">Belum punya template? Unduh di bawah ini:</p>

@@ -1518,6 +1518,17 @@ class Siswa extends Controller
                         $dataSiswa[$kolomDB] = $row[$abjadExcel] ?? null;
                     }
 
+                    // --- NORMALISASI KOLOM TANGGAL ---
+                    // Excel sering menyimpan tanggal sebagai serial number (mis. 40571 = 28 Jan 2011)
+                    // atau string dengan format beragam (2010/2/23, 23/02/2010, 2010-02-23, dst).
+                    // Normalisasikan semuanya ke format Y-m-d agar konsisten dengan database.
+                    $kolomTanggal = ['tgl_lhr', 'tgl_ijazah_smp', 'diterima_tgl', 'tgl_lhr_ayah', 'tgl_lhr_ibu', 'tgl_lhr_wali'];
+                    foreach ($kolomTanggal as $kolom) {
+                        if (!empty($dataSiswa[$kolom])) {
+                            $dataSiswa[$kolom] = $this->normalisasiTanggalImport($dataSiswa[$kolom]);
+                        }
+                    }
+
                     // --- SUNTIKKAN DATA OTOMATIS KE DATABASE ---
                     $dataSiswa['rombel'] = $id_rombel;
 
@@ -1589,6 +1600,75 @@ class Siswa extends Controller
                 exit;
             }
         }
+    }
+
+    /**
+     * Normalisasi nilai tanggal dari Excel menjadi format Y-m-d (format database).
+     *
+     * Menangani:
+     *  - Serial number Excel (mis. 40571 = 2011-01-28) dari cell bertipe Number/General
+     *  - String tanggal dengan berbagai format: Y-m-d, Y/m/d, d/m/Y, m/d/Y, Ymd, dst.
+     *  - String tanggal yang sudah benar (Y-m-d) dibiarkan apa adanya
+     *
+     * @param mixed $nilai
+     * @return string|null
+     */
+    private function normalisasiTanggalImport($nilai)
+    {
+        if ($nilai === null || trim((string) $nilai) === '') {
+            return null;
+        }
+
+        $nilai = trim((string) $nilai);
+
+        // 1. Serial number Excel (angka murni, mis. 40571)
+        if (is_numeric($nilai)) {
+            $angka = (float) $nilai;
+            // Rentang serial yang wajar untuk tanggal (1 Jan 1900 s.d. ~31 Des 9999)
+            if ($angka >= 1 && $angka <= 2958465) {
+                try {
+                    $tanggal = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($angka);
+                    return $tanggal->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Jatuh ke parsing string di bawah
+                }
+            }
+        }
+
+        // 2. String tanggal — coba berbagai format umum
+        // Nama bulan Indonesia (mis. "23 Februari 2010") diterjemahkan dulu ke Inggris,
+        // karena DateTime::createFromFormat('F') hanya mengenali nama bulan bahasa Inggris.
+        $bulanId = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        $bulanEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        $nilai = str_replace($bulanId, $bulanEn, $nilai);
+
+        $formatList = [
+            'Y-m-d', 'Y/m/d', 'Y.m.d', 'Ymd',          // 2010-02-23, 2010/2/23, 2010.02.23, 20100223
+            'd-m-Y', 'd/m/Y', 'd.m.Y',                 // 23-02-2010, 23/02/2010, 23.02.2010
+            'm/d/Y', 'm-d-Y',                          // 02/23/2010 (gaya US)
+            'd-M-Y', 'j-M-Y', 'j F Y', 'd F Y',        // 23-Feb-2010, 23 Februari 2010
+            'Y-m-d H:i:s', 'd/m/Y H:i:s',              // Dengan waktu
+        ];
+
+        foreach ($formatList as $format) {
+            $tanggal = \DateTime::createFromFormat($format, $nilai);
+            if ($tanggal) {
+                $errors = \DateTime::getLastErrors();
+                $bersih = ($errors === false) || ($errors['warning_count'] === 0 && $errors['error_count'] === 0);
+                if ($bersih) {
+                    return $tanggal->format('Y-m-d');
+                }
+            }
+        }
+
+        // 3. Fallback terakhir: strtotime untuk format natural (mis. "23 Feb 2010")
+        $ts = strtotime($nilai);
+        if ($ts !== false) {
+            return date('Y-m-d', $ts);
+        }
+
+        // 4. Tidak dikenali — biarkan apa adanya (akan diverifikasi database)
+        return $nilai;
     }
 
     public function downloadTemplate()
@@ -1694,6 +1774,9 @@ class Siswa extends Controller
 
         // Looping untuk menyusun Header dari abjad A sampai CM di baris ke-1
         $kolomAbjad = 'A';
+        // Kolom tanggal di template — diberi format tanggal agar nilai tersimpan sebagai date,
+        // bukan serial number (mis. 40571)
+        $kolomTanggalTemplate = ['tgl_lhr', 'tgl_ijazah_smp', 'diterima_tgl', 'tgl_lhr_ayah', 'tgl_lhr_ibu', 'tgl_lhr_wali'];
         foreach ($headers as $header) {
             $sheet->setCellValue($kolomAbjad . '1', $header);
 
@@ -1702,6 +1785,13 @@ class Siswa extends Controller
 
             // Auto size kolom agar rapi (opsional, tergantung preferensi)
             $sheet->getColumnDimension($kolomAbjad)->setAutoSize(true);
+
+            // Kolom tanggal: set format tanggal yyyy-mm-dd agar Excel menyimpannya sebagai date
+            if (in_array($header, $kolomTanggalTemplate)) {
+                $sheet->getStyle($kolomAbjad . '2:' . $kolomAbjad . '200')
+                    ->getNumberFormat()
+                    ->setFormatCode('yyyy-mm-dd');
+            }
 
             $kolomAbjad++;
         }
