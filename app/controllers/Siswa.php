@@ -463,6 +463,9 @@ class Siswa extends Controller
         // 1. Antisipasi kehabisan memori & waktu eksekusi
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', 300);
+        // Matikan display_errors agar warning/notice PHP tidak bocor ke file XLSX
+        // (penyebab file "rusak" saat dibuka — lihat pola "headers already sent" di error_log)
+        ini_set('display_errors', '0');
 
 
 
@@ -715,8 +718,9 @@ class Siswa extends Controller
         $total_data = count($siswaData);
         $this->logActivity('EXPORT', "Admin melakukan ekspor seluruh database (Data Siswa Lengkap) ke format Excel. Total: {$total_data} baris data diekspor.");
 
-        // MEMBERSIHKAN BUFFER AGAR FILE TIDAK CORRUPT
-        if (ob_get_length()) {
+        // MEMBERSIHKAN SEMUA OUTPUT BUFFER AGAR FILE TIDAK CORRUPT
+        // (sama seperti exportNominatif — warning/notice PHP tidak boleh ikut terunduh)
+        while (ob_get_level() > 0) {
             ob_end_clean();
         }
 
@@ -733,6 +737,8 @@ class Siswa extends Controller
     {
         ini_set('memory_limit', '512M');
         set_time_limit(300);
+        // Matikan display_errors agar warning/notice PHP tidak bocor ke file XLSX
+        ini_set('display_errors', '0');
         if (!Auth::checkRole('admin')) { /* ... handle akses ditolak ... */
             exit;
         }
@@ -976,8 +982,8 @@ class Siswa extends Controller
         $this->logActivity('EXPORT', "Admin melakukan ekspor seluruh data Buku Induk Siswa (Master) ke format Excel. Total: {$total_data} baris data diekspor.");
         // ===============================================================
 
-        // MEMBERSIHKAN BUFFER AGAR FILE TIDAK CORRUPT (sama seperti exportExcelLengkap)
-        if (ob_get_length()) {
+        // MEMBERSIHKAN SEMUA OUTPUT BUFFER AGAR FILE TIDAK CORRUPT (sama seperti exportExcelLengkap)
+        while (ob_get_level() > 0) {
             ob_end_clean();
         }
 
@@ -991,6 +997,10 @@ class Siswa extends Controller
 
     public function exportExcelKeluar()
     {
+        ini_set('memory_limit', '512M');
+        set_time_limit(300);
+        // Matikan display_errors agar warning/notice PHP tidak bocor ke file XLSX
+        ini_set('display_errors', '0');
         if (!Auth::checkRole('admin')) { /* ... handle akses ditolak ... */
             exit;
         }
@@ -1231,6 +1241,11 @@ class Siswa extends Controller
         $total_data = count($siswaData);
         $this->logActivity('EXPORT', "Admin melakukan ekspor data Siswa Keluar / Mutasi ke format Excel. Total: {$total_data} baris data diekspor.");
         // ===============================================================
+
+        // MEMBERSIHKAN SEMUA OUTPUT BUFFER AGAR FILE TIDAK CORRUPT (sama seperti exportExcelLengkap)
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
