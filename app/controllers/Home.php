@@ -10,8 +10,8 @@ class Home extends Controller
             header('Location: ' . BASEURL . '/dashboard');
             exit;
         } else {
-            // Jika belum login, arahkan ke halaman login
-            header('Location: ' . BASEURL . '/guru/login');
+            // Jika belum login, tampilkan landing page publik
+            header('Location: ' . BASEURL . '/landing');
             exit;
         }
     }
