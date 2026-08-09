@@ -951,7 +951,7 @@ class Siswa extends Controller
             $sheet->setCellValue($col++ . $rowNum, $siswa->olahraga);
             $sheet->setCellValue($col++ . $rowNum, $siswa->organisasi);
             $sheet->setCellValue($col++ . $rowNum, $siswa->cita_cita);
-            $sheet->setCellValue($col++ . $rowNum, $siswa->col . $rowNum, $siswa->lain_lain);
+            $sheet->setCellValue($col++ . $rowNum, $siswa->lain_lain);
             $sheet->setCellValue($col++ . $rowNum, $siswa->nama_status_siswa); // Gunakan alias baru
             $sheet->setCellValue($col++ . $rowNum, $siswa->tahun_lulus);
             $sheet->setCellValue($col++ . $rowNum, $siswa->nama_rombel);
@@ -975,6 +975,11 @@ class Siswa extends Controller
         $total_data = count($siswaData);
         $this->logActivity('EXPORT', "Admin melakukan ekspor seluruh data Buku Induk Siswa (Master) ke format Excel. Total: {$total_data} baris data diekspor.");
         // ===============================================================
+
+        // MEMBERSIHKAN BUFFER AGAR FILE TIDAK CORRUPT (sama seperti exportExcelLengkap)
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
