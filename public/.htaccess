@@ -10,3 +10,14 @@ RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
   AddHandler application/x-httpd-ea-php82 .php .php8 .phtml
 </IfModule>
 # php -- END cPanel-generated handler, do not edit
+
+# ===== PENGUATAN EXPORT EXCEL (jangan dihapus) =====
+# Hosting sering mengunci memory_limit sehingga ini_set() di kode tidak berhasil.
+# Naikkan lewat .htaccess agar export data besar (98 kolom x ribuan siswa)
+# tidak terpotong / file XLSX tidak rusak saat dibuka.
+<IfModule mod_php.c>
+    php_value memory_limit 1024M
+    php_value max_execution_time 600
+    php_value post_max_size 128M
+    php_value upload_max_filesize 128M
+</IfModule>

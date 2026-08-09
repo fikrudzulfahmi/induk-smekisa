@@ -718,6 +718,12 @@ class Siswa extends Controller
         $total_data = count($siswaData);
         $this->logActivity('EXPORT', "Admin melakukan ekspor seluruh database (Data Siswa Lengkap) ke format Excel. Total: {$total_data} baris data diekspor.");
 
+        // TULIS KE FILE TEMP DULU — file XLSX dijamin lengkap (tidak terpotong),
+        // baru dikirim via readfile(). Menghindari file korup akibat memory/timeout
+        // atau output PHP yang bocor ke php://output.
+        $tmpFile = tempnam(sys_get_temp_dir(), 'xlsx_') . '.xlsx';
+        $writer->save($tmpFile);
+
         // MEMBERSIHKAN SEMUA OUTPUT BUFFER AGAR FILE TIDAK CORRUPT
         // (sama seperti exportNominatif — warning/notice PHP tidak boleh ikut terunduh)
         while (ob_get_level() > 0) {
@@ -728,8 +734,10 @@ class Siswa extends Controller
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
         header('Cache-Control: max-age=0');
         header('Pragma: public');
+        header('Content-Length: ' . filesize($tmpFile));
 
-        $writer->save('php://output');
+        readfile($tmpFile);
+        unlink($tmpFile);
         exit;
     }
 
@@ -982,6 +990,11 @@ class Siswa extends Controller
         $this->logActivity('EXPORT', "Admin melakukan ekspor seluruh data Buku Induk Siswa (Master) ke format Excel. Total: {$total_data} baris data diekspor.");
         // ===============================================================
 
+        // TULIS KE FILE TEMP DULU — file XLSX dijamin lengkap (tidak terpotong),
+        // baru dikirim via readfile().
+        $tmpFile = tempnam(sys_get_temp_dir(), 'xlsx_') . '.xlsx';
+        $writer->save($tmpFile);
+
         // MEMBERSIHKAN SEMUA OUTPUT BUFFER AGAR FILE TIDAK CORRUPT (sama seperti exportExcelLengkap)
         while (ob_get_level() > 0) {
             ob_end_clean();
@@ -990,8 +1003,10 @@ class Siswa extends Controller
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
         header('Cache-Control: max-age=0');
+        header('Content-Length: ' . filesize($tmpFile));
 
-        $writer->save('php://output');
+        readfile($tmpFile);
+        unlink($tmpFile);
         exit;
     }
 
@@ -1242,6 +1257,11 @@ class Siswa extends Controller
         $this->logActivity('EXPORT', "Admin melakukan ekspor data Siswa Keluar / Mutasi ke format Excel. Total: {$total_data} baris data diekspor.");
         // ===============================================================
 
+        // TULIS KE FILE TEMP DULU — file XLSX dijamin lengkap (tidak terpotong),
+        // baru dikirim via readfile().
+        $tmpFile = tempnam(sys_get_temp_dir(), 'xlsx_') . '.xlsx';
+        $writer->save($tmpFile);
+
         // MEMBERSIHKAN SEMUA OUTPUT BUFFER AGAR FILE TIDAK CORRUPT (sama seperti exportExcelLengkap)
         while (ob_get_level() > 0) {
             ob_end_clean();
@@ -1250,8 +1270,10 @@ class Siswa extends Controller
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . urlencode($filename) . '"');
         header('Cache-Control: max-age=0');
+        header('Content-Length: ' . filesize($tmpFile));
 
-        $writer->save('php://output');
+        readfile($tmpFile);
+        unlink($tmpFile);
         exit;
     }
 
