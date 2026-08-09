@@ -458,6 +458,37 @@ class Siswa extends Controller
         exit(); // Hentikan eksekusi
     }
 
+    /**
+     * Bersihkan byte invalid UTF-8 dari string (penyebab file XLSX "unreadable content").
+     *
+     * Data siswa bisa mengandung byte rusak (mis. karakter U+202A terpotong di nomor
+     * telepon hasil copy-paste). Jika ditulis mentah ke sharedStrings.xml, XML menjadi
+     * tidak well-formed -> Excel melaporkan "problem with some content" lalu membuang
+     * teks (yang tersisa hanya angka). Fungsi ini membuang byte yang tidak valid UTF-8.
+     *
+     * @param mixed $nilai
+     * @return mixed
+     */
+    private function bersihkanUtf8($nilai)
+    {
+        if (!is_string($nilai) || $nilai === '') {
+            return $nilai;
+        }
+
+        // Sudah valid UTF-8? Biarkan apa adanya.
+        if (preg_match('//u', $nilai) === 1) {
+            return $nilai;
+        }
+
+        // Byte invalid: buang / ganti. Prioritaskan mbstring (paling konsisten),
+        // fallback iconv //IGNORE.
+        if (function_exists('mb_convert_encoding')) {
+            return mb_convert_encoding($nilai, 'UTF-8', 'UTF-8');
+        }
+        $bersih = @iconv('UTF-8', 'UTF-8//IGNORE', $nilai);
+        return $bersih === false ? '' : $bersih;
+    }
+
     public function exportExcelLengkap()
     {
         // 1. Antisipasi kehabisan memori & waktu eksekusi
@@ -595,6 +626,14 @@ class Siswa extends Controller
 
         foreach ($siswaData as $siswa) {
             $c = 'A'; // Mulai dari kolom A setiap baris baru
+
+            // Bersihkan byte invalid UTF-8 dari semua field string sekaligus
+            // (cegah "unreadable content" di Excel — teks hilang, hanya angka muncul)
+            foreach ($siswa as $kunci => $nilai) {
+                if (is_string($nilai)) {
+                    $siswa->$kunci = $this->bersihkanUtf8($nilai);
+                }
+            }
 
             // Kita gunakan isset() sebagai "Sabuk Pengaman" agar tidak fatal error jika ada data null
             $sheet->setCellValue($c++ . $rowNum, $no++);
@@ -872,6 +911,15 @@ class Siswa extends Controller
         $no = 1;
         foreach ($siswaData as $siswa) {
             $col = 'A';
+
+            // Bersihkan byte invalid UTF-8 dari semua field string sekaligus
+            // (cegah "unreadable content" di Excel — teks hilang, hanya angka muncul)
+            foreach ($siswa as $kunci => $nilai) {
+                if (is_string($nilai)) {
+                    $siswa->$kunci = $this->bersihkanUtf8($nilai);
+                }
+            }
+
             $sheet->setCellValue($col++ . $rowNum, $no++); // No
             $sheet->setCellValue($col++ . $rowNum, $siswa->nama_siswa);
             $sheet->setCellValue($col++ . $rowNum, $siswa->nama_panggilan);
@@ -1140,6 +1188,15 @@ class Siswa extends Controller
         $no = 1;
         foreach ($siswaData as $siswa) {
             $col = 'A';
+
+            // Bersihkan byte invalid UTF-8 dari semua field string sekaligus
+            // (cegah "unreadable content" di Excel — teks hilang, hanya angka muncul)
+            foreach ($siswa as $kunci => $nilai) {
+                if (is_string($nilai)) {
+                    $siswa->$kunci = $this->bersihkanUtf8($nilai);
+                }
+            }
+
             $sheet->setCellValue($col++ . $rowNum, $no++); // No
             $sheet->setCellValue($col++ . $rowNum, $siswa->nama_siswa);
             $sheet->setCellValue($col++ . $rowNum, $siswa->nama_panggilan);
