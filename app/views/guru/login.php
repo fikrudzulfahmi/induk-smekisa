@@ -61,6 +61,32 @@
             margin-bottom: 25px;
         }
 
+        /* --- Tombol Kembali ke Beranda --- */
+        .btn-back-beranda {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #435ebe;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 14px;
+            padding: 6px 12px;
+            border-radius: 50px;
+            background: #eef1fb;
+            transition: background 0.2s ease, color 0.2s ease;
+            align-self: flex-start;
+        }
+
+        .btn-back-beranda:hover {
+            background: #435ebe;
+            color: #fff;
+        }
+
+        .btn-back-beranda i {
+            font-size: 1.1rem;
+        }
+
         /* --- Toggle Switch Styles --- */
         .toggle-container {
             display: flex;
@@ -264,6 +290,9 @@
     <div class="auth-wrapper">
         <div class="auth-content">
             <div class="form-container">
+                <a href="<?= BASEURL; ?>/landing" class="btn-back-beranda">
+                    <i class="mdi mdi-arrow-left"></i> Kembali ke Beranda
+                </a>
                 <h4 id="loginTitle">Login Aplikasi</h4>
                 <h6>Silakan masuk untuk melanjutkan</h6>
 
