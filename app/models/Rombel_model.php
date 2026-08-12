@@ -194,8 +194,9 @@ class Rombel_model
 
     public function getActiveTahunPelajaran()
     {
-        // Sesuaikan query ini dengan struktur tabel tahun pelajaran Anda
-        $this->db->query("SELECT tp FROM tp WHERE status = 'Aktif' LIMIT 1");
+        // Tahun pelajaran aktif kini di-set dari menu Profil Sekolah (tabel profil_sekolah),
+        // bukan diisi manual di tabel `tp`.
+        $this->db->query("SELECT tahun_pelajaran AS tp FROM profil_sekolah WHERE id = 1 LIMIT 1");
         return $this->db->single();
     }
 

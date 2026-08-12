@@ -44,6 +44,7 @@ class ProfilSekolah_model
                     nama_kepsek = :nama_kepsek,
                     nip_kepsek = :nip_kepsek,
                     versi_erapor = :versi_erapor, -- Update kolom teks versi
+                    tahun_pelajaran = :tahun_pelajaran,
                     logo_sekolah = :logo_sekolah ,
                     token = :token
                   WHERE id = 1";
@@ -66,6 +67,7 @@ class ProfilSekolah_model
         $this->db->bind('nama_kepsek', $data['nama_kepsek'] ?? null);
         $this->db->bind('nip_kepsek', $data['nip_kepsek'] ?? null);
         $this->db->bind('versi_erapor', $data['versi_erapor'] ?? 'v?.?.?'); // Bind versi sebagai teks
+        $this->db->bind('tahun_pelajaran', $data['tahun_pelajaran'] ?? null);
         $this->db->bind('logo_sekolah', $data['logo_sekolah'] ?? null);
         $this->db->bind('token', $data['token'] ?? null);
 

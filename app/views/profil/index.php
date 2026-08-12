@@ -80,6 +80,8 @@
                         <hr>
                         <h6>Pengaturan Rapor</h6>
                         <dl class="row">
+                            <dt class="col-sm-4">Tahun Pelajaran Aktif</dt>
+                            <dd class="col-sm-8">: <?= htmlspecialchars($data['profil']->tahun_pelajaran ?? '-'); ?></dd>
                             <dt class="col-sm-4">Versi E-Rapor</dt>
                             <dd class="col-sm-8">: <?= htmlspecialchars($data['profil']->versi_erapor ?? '-'); ?></dd>
                         </dl>

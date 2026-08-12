@@ -53,6 +53,7 @@ class Profil extends Controller
                 'nama_kepsek' => '',
                 'nip_kepsek' => '',
                 'versi_erapor' => 'v1.0.0',
+                'tahun_pelajaran' => '',
                 'logo_sekolah' => null,
                 'token' => ''
             ];

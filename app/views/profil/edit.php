@@ -102,6 +102,11 @@
                                 <input type="text" class="form-control form-control-sm" id="versi_erapor" name="versi_erapor" value="<?= htmlspecialchars($data['profil']->versi_erapor ?? 'v1.0.0'); ?>" placeholder="Contoh: v1.2.0" required>
                                 <small class="form-text text-muted">Akan tampil di footer cetakan rapor.</small>
                             </div>
+                            <div class="form-group mb-2">
+                                <label for="tahun_pelajaran" class="form-label">Tahun Pelajaran Aktif <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" id="tahun_pelajaran" name="tahun_pelajaran" value="<?= htmlspecialchars($data['profil']->tahun_pelajaran ?? ''); ?>" placeholder="Contoh: 2025/2026" required>
+                                <small class="form-text text-muted">Dipakai di semua cetakan (presensi, rekap rombel, nominatif, daftar alamat, absen).</small>
+                            </div>
                             <hr>
                             <h6>Logo Sekolah</h6>
                             <div class="form-group mb-2">
