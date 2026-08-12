@@ -194,10 +194,50 @@ class Rombel_model
 
     public function getActiveTahunPelajaran()
     {
-        // Tahun pelajaran aktif kini di-set dari menu Profil Sekolah (tabel profil_sekolah),
-        // bukan diisi manual di tabel `tp`.
-        $this->db->query("SELECT tahun_pelajaran AS tp FROM profil_sekolah WHERE id = 1 LIMIT 1");
+        // Baca dari tabel tp (id_tp, tp, status) — status 'Aktif' diatur lewat Profil Sekolah
+        $this->db->query("SELECT tp FROM tp WHERE status = 'Aktif' LIMIT 1");
         return $this->db->single();
+    }
+
+    /**
+     * Ambil semua tahun pelajaran dari tabel tp (untuk dropdown di Profil Sekolah).
+     * @return array
+     */
+    public function getAllTahunPelajaran()
+    {
+        $this->db->query("SELECT * FROM tp ORDER BY tp DESC");
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Set tahun pelajaran tertentu menjadi Aktif (yang lain jadi Nonaktif).
+     * @param int $idTp
+     * @return bool
+     */
+    public function setActiveTahunPelajaran($idTp)
+    {
+        // 1. Nonaktifkan semua
+        $this->db->query("UPDATE tp SET status = 'Nonaktif'");
+        $this->db->execute();
+
+        // 2. Aktifkan yang dipilih
+        $this->db->query("UPDATE tp SET status = 'Aktif' WHERE id_tp = :id_tp");
+        $this->db->bind('id_tp', $idTp);
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
+    }
+
+    /**
+     * Tambah tahun pelajaran baru (status default Nonaktif).
+     * @param string $tp
+     * @return bool
+     */
+    public function tambahTahunPelajaran($tp)
+    {
+        $this->db->query("INSERT INTO tp (tp, status) VALUES (:tp, 'Nonaktif')");
+        $this->db->bind('tp', $tp);
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
     }
 
     public function getAllRombelWithStudentCounts()

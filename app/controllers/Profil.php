@@ -34,6 +34,9 @@ class Profil extends Controller
         $data['judul'] = 'Edit Profil Sekolah';
         // Ambil data profil (selalu ID 1)
         $data['profil'] = $this->model('ProfilSekolah_model')->getProfil();
+        // Ambil daftar tahun pelajaran dari tabel tp untuk dropdown
+        $data['tahun_pelajaran_list'] = $this->model('Rombel_model')->getAllTahunPelajaran();
+        $data['tahun_pelajaran_aktif'] = $this->model('Rombel_model')->getActiveTahunPelajaran();
 
         // Jika data profil belum ada (tabel kosong), inisialisasi objek kosong
         if (!$data['profil']) {
@@ -53,7 +56,6 @@ class Profil extends Controller
                 'nama_kepsek' => '',
                 'nip_kepsek' => '',
                 'versi_erapor' => 'v1.0.0',
-                'tahun_pelajaran' => '',
                 'logo_sekolah' => null,
                 'token' => ''
             ];
@@ -162,6 +164,48 @@ class Profil extends Controller
 
         // 5. Redirect kembali ke halaman profil
         header('Location: ' . BASEURL . '/profil/index');
+        exit;
+    }
+
+    /**
+     * Set tahun pelajaran tertentu (dari tabel tp) menjadi Aktif.
+     */
+    public function setTahunPelajaranAktif()
+    {
+        $idTp = $_POST['id_tp'] ?? null;
+        if (!$idTp) {
+            Flasher::setFlash('Tahun Pelajaran', 'ID tahun pelajaran tidak valid.', 'danger');
+            header('Location: ' . BASEURL . '/profil/edit');
+            exit;
+        }
+
+        if ($this->model('Rombel_model')->setActiveTahunPelajaran($idTp)) {
+            Flasher::setFlash('Tahun Pelajaran', 'berhasil diaktifkan.', 'success');
+        } else {
+            Flasher::setFlash('Tahun Pelajaran', 'gagal diaktifkan (pastikan id_tp ada).', 'danger');
+        }
+        header('Location: ' . BASEURL . '/profil/edit');
+        exit;
+    }
+
+    /**
+     * Tambah tahun pelajaran baru ke tabel tp (status Nonaktif).
+     */
+    public function tambahTahunPelajaran()
+    {
+        $tp = trim($_POST['tp'] ?? '');
+        if ($tp === '') {
+            Flasher::setFlash('Tahun Pelajaran', 'Format tahun pelajaran tidak boleh kosong.', 'danger');
+            header('Location: ' . BASEURL . '/profil/edit');
+            exit;
+        }
+
+        if ($this->model('Rombel_model')->tambahTahunPelajaran($tp)) {
+            Flasher::setFlash('Tahun Pelajaran', "{$tp} berhasil ditambahkan.", 'success');
+        } else {
+            Flasher::setFlash('Tahun Pelajaran', 'gagal ditambahkan.', 'danger');
+        }
+        header('Location: ' . BASEURL . '/profil/edit');
         exit;
     }
 } // Akhir Class

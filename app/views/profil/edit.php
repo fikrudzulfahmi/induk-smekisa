@@ -102,10 +102,38 @@
                                 <input type="text" class="form-control form-control-sm" id="versi_erapor" name="versi_erapor" value="<?= htmlspecialchars($data['profil']->versi_erapor ?? 'v1.0.0'); ?>" placeholder="Contoh: v1.2.0" required>
                                 <small class="form-text text-muted">Akan tampil di footer cetakan rapor.</small>
                             </div>
+                            <hr>
+                            <h6>Tahun Pelajaran</h6>
+                            <?php $tp_aktif = $data['tahun_pelajaran_aktif']->tp ?? ''; ?>
                             <div class="form-group mb-2">
-                                <label for="tahun_pelajaran" class="form-label">Tahun Pelajaran Aktif <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-sm" id="tahun_pelajaran" name="tahun_pelajaran" value="<?= htmlspecialchars($data['profil']->tahun_pelajaran ?? ''); ?>" placeholder="Contoh: 2025/2026" required>
-                                <small class="form-text text-muted">Dipakai di semua cetakan (presensi, rekap rombel, nominatif, daftar alamat, absen).</small>
+                                <label class="form-label">Tahun Pelajaran Aktif</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <select class="form-select form-select-sm" id="id_tp" name="id_tp" style="max-width:220px;">
+                                        <?php if (empty($data['tahun_pelajaran_list'])) : ?>
+                                            <option value="">Belum ada data tahun pelajaran</option>
+                                        <?php else : ?>
+                                            <?php foreach ($data['tahun_pelajaran_list'] as $tp_item) : ?>
+                                                <option value="<?= $tp_item->id_tp; ?>" <?= ($tp_item->status === 'Aktif') ? 'selected' : ''; ?>>
+                                                    <?= htmlspecialchars($tp_item->tp); ?>
+                                                    <?= ($tp_item->status === 'Aktif') ? '(Aktif)' : ''; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="setTpAktif()">
+                                        <i class="bi bi-check-circle"></i> Set Aktif
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">Dipakai di semua cetakan (presensi, rekap rombel, nominatif, daftar alamat, absen, kenaikan &amp; kelulusan).</small>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label for="tp_baru" class="form-label">Tambah Tahun Pelajaran</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control form-control-sm" id="tp_baru" placeholder="Contoh: 2026/2027" style="max-width:220px;">
+                                    <button type="button" class="btn btn-sm btn-success" onclick="tambahTp()">
+                                        <i class="bi bi-plus-circle"></i> Tambah
+                                    </button>
+                                </div>
                             </div>
                             <hr>
                             <h6>Logo Sekolah</h6>
@@ -140,6 +168,46 @@
                     <hr>
                     <button type="submit" class="btn btn-primary mt-2"><i class="bi bi-save-fill"></i> Simpan Perubahan Profil</button>
                 </form>
+
+                <script>
+                    // Set tahun pelajaran aktif (POST terpisah, bukan submit form profil)
+                    function setTpAktif() {
+                        const idTp = document.getElementById('id_tp').value;
+                        if (!idTp) {
+                            alert('Pilih tahun pelajaran terlebih dahulu.');
+                            return;
+                        }
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '<?= BASEURL; ?>/profil/setTahunPelajaranAktif';
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'id_tp';
+                        input.value = idTp;
+                        form.appendChild(input);
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+
+                    // Tambah tahun pelajaran baru (POST terpisah)
+                    function tambahTp() {
+                        const tpBaru = document.getElementById('tp_baru').value.trim();
+                        if (!tpBaru) {
+                            alert('Isi format tahun pelajaran terlebih dahulu (contoh: 2026/2027).');
+                            return;
+                        }
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '<?= BASEURL; ?>/profil/tambahTahunPelajaran';
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'tp';
+                        input.value = tpBaru;
+                        form.appendChild(input);
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                </script>
             </div>
         </div>
     </div>
