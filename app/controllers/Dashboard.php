@@ -11,6 +11,8 @@ class Dashboard extends Controller
 
         $data['judul'] = 'Dashboard';
         $data['guru'] = $this->model('Guru_model')->getGuruById($_SESSION['guru_id']);
+        // Tahun pelajaran aktif (dari tabel tp — diatur di Profil Sekolah)
+        $data['tahun_pelajaran_aktif'] = $this->model('Rombel_model')->getActiveTahunPelajaran();
 
         // --- 4 KARTU UTAMA ---
         $data['total_siswa'] = $this->model('Siswa_model')->hitungJumlahSiswa();

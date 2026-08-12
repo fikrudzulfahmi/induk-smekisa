@@ -4,7 +4,13 @@
 <div id="main">
     <div class="page-heading">
         <h3>Dashboard</h3>
-        <p class="text-subtitle text-muted">Selamat datang, <?= $data['guru']->nama_guru; ?>.</p>
+        <p class="text-subtitle text-muted">Selamat datang, <?= $data['guru']->nama_guru; ?>.
+            <?php if (!empty($data['tahun_pelajaran_aktif']->tp)) : ?>
+                <span class="badge bg-primary ms-2">
+                    <i class="bi bi-calendar-event me-1"></i>Tahun Pelajaran: <?= htmlspecialchars($data['tahun_pelajaran_aktif']->tp); ?>
+                </span>
+            <?php endif; ?>
+        </p>
     </div>
 
     <div class="page-content">

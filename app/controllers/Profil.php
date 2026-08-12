@@ -19,6 +19,8 @@ class Profil extends Controller
         $data['judul'] = 'Profil Sekolah';
         // Ambil data profil (selalu ID 1)
         $data['profil'] = $this->model('ProfilSekolah_model')->getProfil();
+        // Tahun pelajaran aktif (dari tabel tp)
+        $data['tahun_pelajaran_aktif'] = $this->model('Rombel_model')->getActiveTahunPelajaran();
 
 
 

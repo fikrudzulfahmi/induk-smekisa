@@ -6,6 +6,13 @@
 <div id="main">
     <div class="page-heading">
         <h3>Profil Sekolah</h3>
+        <p class="text-subtitle text-muted">
+            <?php if (!empty($data['tahun_pelajaran_aktif']->tp)) : ?>
+                <span class="badge bg-primary">
+                    <i class="bi bi-calendar-event me-1"></i>Tahun Pelajaran: <?= htmlspecialchars($data['tahun_pelajaran_aktif']->tp); ?>
+                </span>
+            <?php endif; ?>
+        </p>
     </div>
     <div class="page-content">
         <?php Flasher::flash(); ?>
