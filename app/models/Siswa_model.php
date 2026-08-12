@@ -379,7 +379,7 @@ class Siswa_model
         $this->db->bind(':nama_panggilan', $data['nama_panggilan'] ?? null);
         $this->db->bind(':no_induk', $data['no_induk'] ?? null);
         $this->db->bind(':nisn', $data['nisn'] ?? null);
-        $this->db->bind(':nik', $data['nik_siswa'] ?? null); // Sesuaikan dengan name di form jika berbeda
+        $this->db->bind(':nik', $data['nik'] ?? null); // Form kirim name="nik" (bukan nik_siswa)
         $this->db->bind(':nkk', $data['nkk'] ?? null);
         $this->db->bind(':no_akta', $data['no_akta'] ?? null);
         $this->db->bind(':jenis_kelamin', $data['jenis_kelamin'] ?? null);
@@ -400,7 +400,7 @@ class Siswa_model
         $this->db->bind(':rt', $data['rt'] ?? null);
         $this->db->bind(':rw', $data['rw'] ?? null);
         $this->db->bind(':desa', $data['desa'] ?? null);
-        $this->db->bind(':kec', $data['kec'] ?? null); // Pastikan name di form = kec
+        $this->db->bind(':kec', $data['kecamatan'] ?? null); // Form kirim name="kecamatan"
         $this->db->bind(':kab', $data['kab'] ?? null);
         $this->db->bind(':kd_pos', $data['kd_pos'] ?? null);
         $this->db->bind(':provinsi', $data['provinsi'] ?? null);

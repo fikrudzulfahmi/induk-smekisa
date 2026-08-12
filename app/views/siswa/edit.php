@@ -153,7 +153,7 @@
                         <h5 class="mt-4">D. Keterangan Pendidikan</h5>
                         <div class="row mb-3"><label class="col-sm-3 col-form-label">Pendidikan Dasar</label>
                             <div class="col-sm-1"><label class="col-form-label">Asal SD/MI</label></div>
-                            <div class="col-sm-4"><input type="text" class="form-control" placeholder="SD/MI" name="sasal_sd" value="<?= htmlspecialchars($data['siswa']->asal_sd ?? ''); ?>"></div>
+                            <div class="col-sm-4"><input type="text" class="form-control" placeholder="SD/MI" name="asal_sd" value="<?= htmlspecialchars($data['siswa']->asal_sd ?? ''); ?>"></div>
                             <div class="col-sm-1"><label class="col-form-label">NPSN SD/MI</label></div>
                             <div class="col-sm-3"><input type="text" class="form-control" placeholder="NPSN SD/MI" name="npsn_sd" value="<?= htmlspecialchars($data['siswa']->npsn_sd ?? ''); ?>"></div>
                         </div>
