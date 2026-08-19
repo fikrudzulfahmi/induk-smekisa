@@ -58,50 +58,26 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* ===== MOBILE FRIENDLY: TOMBOL BURGER (menu) ===== */
-        /* app.js sudah punya handler klik .burger-btn (toggle sidebar + backdrop);
-           elemen ini yang selama ini hilang sehingga menu tidak bisa dibuka di HP. */
-        .burger-btn {
+        /* ===== MOBILE FRIENDLY: BOTTOM NAVIGATION + MENU SHEET ===== */
+        /* Di layar <1200px sidebar disembunyikan; menu pindah ke bawah layar
+           (bottom nav 4 item + tombol "Menu" untuk menu lengkap). */
+
+        /* Sembunyikan elemen mobile secara default (desktop) */
+        .mobile-bottom-nav,
+        .mobile-menu-sheet,
+        .mobile-menu-backdrop {
             display: none;
-            position: fixed;
-            top: 14px;
-            left: 14px;
-            z-index: 1055;
-            width: 42px;
-            height: 42px;
-            border: none;
-            border-radius: 10px;
-            background-color: #435ebe !important;
-            color: #fff;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(67, 94, 190, 0.35);
-        }
-
-        .burger-btn:hover {
-            background-color: #3649a8 !important;
-        }
-
-        /* Tombol tutup (X) di dalam sidebar saat terbuka di mobile */
-        .sidebar-toggler.x {
-            color: #6c757d;
-            font-size: 1.3rem;
-            line-height: 1;
-            text-decoration: none;
-        }
-
-        .sidebar-toggler.x:hover {
-            color: #435ebe;
         }
 
         @media screen and (max-width: 1199px) {
-            .burger-btn {
-                display: flex;
+            /* Sidebar desktop disembunyikan di mobile */
+            #sidebar {
+                display: none !important;
             }
 
             /* Kurangi padding konten agar tidak sempit di HP */
             #main {
-                padding: 1rem;
+                padding: 1rem 1rem 5.2rem;
             }
 
             .page-heading {
@@ -122,13 +98,174 @@
                 -webkit-overflow-scrolling: touch;
                 white-space: nowrap;
             }
+
+            /* ===== Bottom Navigation Bar ===== */
+            .mobile-bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 1040;
+                background: #ffffff;
+                border-top: 1px solid #e9ecef;
+                box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+
+            .mobile-bottom-nav .mbn-item {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 3px;
+                padding: 8px 2px;
+                font-size: 0.68rem;
+                font-weight: 600;
+                color: #6c757d;
+                text-decoration: none;
+                background: none;
+                border: none;
+                cursor: pointer;
+            }
+
+            .mobile-bottom-nav .mbn-item i {
+                font-size: 1.25rem;
+                line-height: 1;
+            }
+
+            .mobile-bottom-nav .mbn-item.active {
+                color: #435ebe;
+            }
+
+            .mobile-bottom-nav .mbn-item:active {
+                background: #eef1fb;
+            }
+
+            /* ===== Menu Sheet (bottom sheet menu lengkap) ===== */
+            .mobile-menu-sheet {
+                display: block;
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1060;
+                max-height: 82vh;
+                background: #ffffff;
+                border-radius: 16px 16px 0 0;
+                box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.18);
+                transform: translateY(105%);
+                transition: transform 0.3s ease;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .mobile-menu-sheet.show {
+                transform: translateY(0);
+            }
+
+            .mobile-menu-sheet-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 16px 20px 10px;
+                border-bottom: 1px solid #eef1fb;
+                flex-shrink: 0;
+            }
+
+            .mobile-menu-sheet-header h6 {
+                margin: 0;
+                font-weight: 700;
+                color: #435ebe;
+            }
+
+            .mobile-menu-close {
+                border: none;
+                background: none;
+                font-size: 1.3rem;
+                color: #6c757d;
+                padding: 4px 6px;
+                border-radius: 8px;
+            }
+
+            .mobile-menu-close:hover {
+                background: #eef1fb;
+                color: #435ebe;
+            }
+
+            /* Menu di dalam sheet — scroll sendiri */
+            .mobile-menu-sheet .sidebar-menu {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                padding: 10px 12px 24px;
+            }
+
+            .mobile-menu-sheet .menu {
+                padding-left: 0;
+                margin-top: 0;
+            }
+
+            .mobile-menu-sheet .sidebar-title {
+                padding: 0.9rem 1rem 0.4rem;
+                margin: 0.4rem 0 0.3rem;
+                font-size: 0.85rem;
+                font-weight: 700;
+                color: #25396f;
+                list-style: none;
+            }
+
+            .mobile-menu-sheet .sidebar-item {
+                list-style: none;
+                margin-top: 0.3rem;
+            }
+
+            .mobile-menu-sheet .sidebar-link {
+                display: flex;
+                align-items: center;
+                padding: 0.7rem 1rem;
+                font-size: 0.95rem;
+                font-weight: 600;
+                border-radius: 0.5rem;
+                color: #25396f;
+                text-decoration: none;
+            }
+
+            .mobile-menu-sheet .sidebar-link i {
+                margin-right: 0.9rem;
+                font-size: 1.1rem;
+                color: #7c8db5;
+            }
+
+            .mobile-menu-sheet .sidebar-item.active .sidebar-link {
+                background: #435ebe;
+                color: #fff;
+            }
+
+            .mobile-menu-sheet .sidebar-item.active .sidebar-link i {
+                color: #fff;
+            }
+
+            /* ===== Backdrop ===== */
+            .mobile-menu-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                z-index: 1050;
+                background: rgba(0, 0, 0, 0.5);
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+
+            .mobile-menu-backdrop.show {
+                opacity: 1;
+                visibility: visible;
+            }
         }
     </style>
 </head>
 
 <body>
     <div id="app">
-        <!-- Tombol menu (hamburger) — hanya tampil di layar < 1200px -->
-        <button type="button" class="burger-btn d-xl-none" id="sidebarToggleBtn" aria-label="Buka Menu">
-            <i class="bi bi-list fs-3"></i>
-        </button>

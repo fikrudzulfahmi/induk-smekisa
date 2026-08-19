@@ -39,21 +39,26 @@
             allowClear: true // Opsi untuk menghapus pilihan
         });
 
-        // ===== MOBILE FRIENDLY =====
-        // CSS template: #sidebar.active .sidebar-wrapper{left:0} mengalahkan media
-        // query mobile, padahal HTML default class="active" -> di HP sidebar selalu
-        // terbuka menutupi layar. Sembunyikan saat load di layar < 1200px.
-        if (window.innerWidth <= 1199) {
-            $('#sidebar').removeClass('active').addClass('inactive');
-            $('.sidebar-backdrop').remove();
-        }
-
-        // Tutup sidebar via tombol X (app.js hanya handle .burger-btn)
-        $('#sidebarCloseBtn').on('click', function(e) {
+        // ===== MOBILE: BOTTOM NAVIGATION (menu pindah ke bawah layar) =====
+        // Tombol "Menu" membuka sheet berisi menu lengkap; backdrop/tombol X menutup.
+        $('#mobileMenuBtn').on('click', function(e) {
             e.preventDefault();
-            $('#sidebar').removeClass('active').addClass('inactive');
-            $('.sidebar-backdrop').remove();
-            $('body').css('overflow-y', 'auto');
+            $('#mobileMenuSheet').addClass('show');
+            $('#mobileMenuBackdrop').addClass('show');
+            $('#mobileMenuSheet').attr('aria-hidden', 'false');
+        });
+        $('#mobileMenuClose, #mobileMenuBackdrop').on('click', function() {
+            $('#mobileMenuSheet').removeClass('show');
+            $('#mobileMenuBackdrop').removeClass('show');
+            $('#mobileMenuSheet').attr('aria-hidden', 'true');
+        });
+        // Tutup dengan tombol Escape
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape') {
+                $('#mobileMenuSheet').removeClass('show');
+                $('#mobileMenuBackdrop').removeClass('show');
+                $('#mobileMenuSheet').attr('aria-hidden', 'true');
+            }
         });
     });
 </script>

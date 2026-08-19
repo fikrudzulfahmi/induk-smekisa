@@ -2,6 +2,7 @@
 $url_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $url_segments = explode('/', $url_path);
 $current_page = $url_segments[1] ?: 'dashboard';
+$seg2 = $url_segments[2] ?? '';
 ?>
 
 <div id="sidebar" class="active">
@@ -13,89 +14,52 @@ $current_page = $url_segments[1] ?: 'dashboard';
                         <h3>SchoolCore</h3>
                     </a>
                 </div>
-                <!-- Tombol tutup sidebar (muncul otomatis di layar < 1200px) -->
-                <a href="#" class="sidebar-toggler x" id="sidebarCloseBtn" aria-label="Tutup Menu">
-                    <i class="bi bi-x-lg"></i>
-                </a>
             </div>
         </div>
         <div class="sidebar-menu">
-            <ul class="menu">
-                <li class="sidebar-title">Menu Utama</li>
-
-                <li class="sidebar-item <?= ($current_page == 'dashboard') ? 'active' : '' ?>">
-                    <a href="<?= BASEURL; ?>/dashboard" class='sidebar-link'><i class="bi bi-grid-fill"></i><span>Dashboard</span></a>
-                </li>
-                <li class="sidebar-title">Data Induk</li>
-                <li class="sidebar-item <?= (isset($data['current_page']) && $data['current_page'] == 'dataInduk') ? 'active' : '' ?>">
-                    <a href="<?= BASEURL; ?>/siswa/dataInduk" class='sidebar-link'><i class="bi bi-people-fill"></i><span>Data Induk</span></a>
-                </li>
-                <li class="sidebar-title">Administrasi</li>
-                <li class="sidebar-item <?= (isset($data['current_page']) && $data['current_page'] == 'siswa') ? 'active' : '' ?>">
-                    <a href="<?= BASEURL; ?>/siswa" class='sidebar-link'><i class="bi bi-people-fill"></i><span>Data Siswa Aktif</span></a>
-                </li>
-                <li class="sidebar-item <?= ($current_page == 'rombel') ? 'active' : '' ?>">
-                    <a href="<?= BASEURL; ?>/rombel" class='sidebar-link'><i class="bi bi-collection-fill"></i><span>Data Rombel</span></a>
-                </li>
-
-                <?php if (Auth::checkRole('admin') || Auth::checkRole('waka') || Auth::checkRole('kajur')) : ?>
-                    <li class="sidebar-item <?= ($current_page == 'jurusan') ? 'active' : '' ?>">
-                        <a href="<?= BASEURL; ?>/jurusan" class='sidebar-link'><i class="bi bi-mortarboard-fill"></i><span>Data Jurusan</span></a>
-                    </li>
-                <?php endif; ?>
-
-                <?php if (Auth::checkRole('admin')) : ?>
-                    <li class="sidebar-item <?= ($current_page == 'guru' && !in_array(($url_segments[2] ?? ''), ['profil', 'editProfil'])) ? 'active' : '' ?>">
-                        <a href="<?= BASEURL; ?>/guru/daftar" class='sidebar-link'>
-                            <i class="bi bi-person-badge-fill"></i>
-                            <span>Data Guru</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item <?= ($current_page == 'profil') ? 'active' : '' ?>">
-                        <a href="<?= BASEURL; ?>/profil" class='sidebar-link'><i class="bi bi-person-circle"></i><span>Profil Sekolah</span></a>
-                    </li>
-
-                    <li class="sidebar-item <?= ($current_page == 'log') ? 'active' : '' ?>">
-                        <a href="<?= BASEURL; ?>/log" class='sidebar-link'>
-                            <i class="bi bi-clock-history"></i>
-                            <span>Activity Log</span>
-                        </a>
-                    </li>
-
-                    <li class="sidebar-item <?= ($current_page == 'backup') ? 'active' : '' ?>">
-                        <a href="<?= BASEURL; ?>/backup" class='sidebar-link'>
-                            <i class="bi bi-hdd-fill"></i>
-                            <span>Backup & Restore</span>
-                        </a>
-                    </li>
-                <?php endif; ?>
-
-                <?php if (Auth::checkRole('admin') || Auth::checkRole('waka')) : ?>
-                    <li class="sidebar-title">Mutasi</li>
-                    <li class="sidebar-item <?= ($current_page == 'mutasi' && !in_array(($url_segments[2] ?? ''), ['profil', 'editProfil'])) ? 'active' : '' ?>">
-                        <a href="<?= BASEURL; ?>/mutasi" class='sidebar-link'>
-                            <i class="bi bi-arrow-left-right"></i>
-                            <span>Data Mutasi</span>
-                        </a>
-                    </li>
-                <?php endif; ?>
-
-                <li class="sidebar-title">Akun</li>
-
-                <li class="sidebar-item <?= ($current_page == 'guru' && in_array(($url_segments[2] ?? ''), ['profil', 'editProfil'])) ? 'active' : '' ?>">
-                    <a href="<?= BASEURL; ?>/guru/profil" class='sidebar-link'>
-                        <i class="bi bi-person-circle"></i>
-                        <span>Profil Saya</span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item">
-                    <a href="<?= BASEURL; ?>/guru/logout" class='sidebar-link'>
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
-            </ul>
+            <?php require 'sidebar_menu.php'; ?>
         </div>
+    </div>
+</div>
+
+<!-- ================= MOBILE: BOTTOM NAVIGATION ================= -->
+<!-- Di layar <1200px sidebar disembunyikan; menu pindah ke bawah layar.
+     4 menu utama tampil langsung + tombol "Menu" untuk menu lengkap. -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <a href="<?= BASEURL; ?>/dashboard" class="mbn-item <?= ($current_page == 'dashboard') ? 'active' : '' ?>">
+        <i class="bi bi-grid-fill"></i>
+        <span>Dashboard</span>
+    </a>
+    <a href="<?= BASEURL; ?>/siswa/dataInduk" class="mbn-item <?= (isset($data['current_page']) && $data['current_page'] == 'dataInduk') ? 'active' : '' ?>">
+        <i class="bi bi-people-fill"></i>
+        <span>Data Induk</span>
+    </a>
+    <a href="<?= BASEURL; ?>/siswa" class="mbn-item <?= ($current_page == 'siswa') ? 'active' : '' ?>">
+        <i class="bi bi-people-fill"></i>
+        <span>Siswa</span>
+    </a>
+    <a href="<?= BASEURL; ?>/rombel" class="mbn-item <?= ($current_page == 'rombel') ? 'active' : '' ?>">
+        <i class="bi bi-collection-fill"></i>
+        <span>Rombel</span>
+    </a>
+    <button type="button" class="mbn-item mbn-menu-btn" id="mobileMenuBtn" aria-label="Menu Lainnya">
+        <i class="bi bi-list"></i>
+        <span>Menu</span>
+    </button>
+</nav>
+
+<!-- Backdrop menu mobile -->
+<div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
+
+<!-- ================= MOBILE: MENU LENGKAP (bottom sheet) ================= -->
+<div class="mobile-menu-sheet" id="mobileMenuSheet" aria-hidden="true">
+    <div class="mobile-menu-sheet-header">
+        <h6><i class="bi bi-grid-fill"></i> Menu Aplikasi</h6>
+        <button type="button" class="mobile-menu-close" id="mobileMenuClose" aria-label="Tutup Menu">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+    <div class="sidebar-menu">
+        <?php require 'sidebar_menu.php'; ?>
     </div>
 </div>
