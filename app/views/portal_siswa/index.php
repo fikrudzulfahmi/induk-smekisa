@@ -271,7 +271,7 @@ error_reporting(E_ALL);
                 </div>
             </div>
         </div>
-        <a href="<?= BASEURL; ?>/login/logout" class="btn-primary" align="center" onclick="return confirm('Apakah Anda yakin ingin keluar dari sistem?');">
+        <a href="<?= BASEURL; ?>/authSiswa/logoutSiswa" class="btn-primary" align="center" onclick="return confirm('Apakah Anda yakin ingin keluar dari sistem?');">
             <i class="bi bi-box-arrow-right"></i> Keluar
         </a>
     </div>

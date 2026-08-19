@@ -11,9 +11,24 @@ class AuthSiswa extends Controller
             header('Location: ' . BASEURL . '/portal_siswa');
             exit;
         }
-        // Jika belum login, redirect ke halaman login
-        header('Location: ' . BASEURL . '/guru/login');
+        // Jika belum login, tampilkan halaman login murid terpisah
+        header('Location: ' . BASEURL . '/authSiswa/login');
         exit;
+    }
+
+    /**
+     * Halaman login murid (terpisah dari login guru).
+     */
+    public function login()
+    {
+        // Jika sudah login siswa, langsung ke portal
+        if (isset($_SESSION['login_siswa'])) {
+            header('Location: ' . BASEURL . '/portal_siswa');
+            exit;
+        }
+
+        $data['judul'] = 'Login Murid';
+        $this->view('portal_siswa/login', $data);
     }
 
     public function prosesLoginSiswa()
@@ -26,7 +41,7 @@ class AuthSiswa extends Controller
         // Validasi CAPTCHA terlebih dahulu
         if (empty($captcha_answer) || empty($captcha_hash)) {
             $_SESSION['error_login'] = 'CAPTCHA tidak valid. Silakan refresh halaman dan coba lagi.';
-            header('Location: ' . BASEURL . '/guru/login?role=siswa&error=captcha_invalid');
+            header('Location: ' . BASEURL . '/authSiswa/login');
             exit;
         }
 
@@ -34,20 +49,20 @@ class AuthSiswa extends Controller
         $expected_answer = base64_decode($captcha_hash);
         if ((int)$captcha_answer !== (int)$expected_answer) {
             $_SESSION['error_login'] = 'Jawaban CAPTCHA salah. Silakan coba lagi.';
-            header('Location: ' . BASEURL . '/guru/login?role=siswa&error=captcha_wrong');
+            header('Location: ' . BASEURL . '/authSiswa/login');
             exit;
         }
 
         // Validasi NIS dan tanggal lahir tidak kosong
         if (empty($nis)) {
             $_SESSION['error_login'] = 'NIS tidak boleh kosong.';
-            header('Location: ' . BASEURL . '/guru/login?role=siswa&error=nis_empty');
+            header('Location: ' . BASEURL . '/authSiswa/login');
             exit;
         }
 
         if (empty($tgl_lhr)) {
             $_SESSION['error_login'] = 'Tanggal lahir tidak boleh kosong.';
-            header('Location: ' . BASEURL . '/guru/login?role=siswa&error=tgl_lahir_empty');
+            header('Location: ' . BASEURL . '/authSiswa/login');
             exit;
         }
 
@@ -72,7 +87,7 @@ class AuthSiswa extends Controller
         } else {
             // Jika tidak ditemukan data siswa
             $_SESSION['error_login'] = 'NIS atau tanggal lahir tidak terdaftar di sistem. Silakan periksa kembali.';
-            header('Location: ' . BASEURL . '/guru/login?role=siswa&error=not_registered');
+            header('Location: ' . BASEURL . '/authSiswa/login');
             exit;
         }
     }
@@ -83,7 +98,7 @@ class AuthSiswa extends Controller
         unset($_SESSION['login_siswa']);
         unset($_SESSION['data_siswa']);
 
-        header('Location: ' . BASEURL . '/login');
+        header('Location: ' . BASEURL . '/authSiswa/login');
         exit;
     }
 }

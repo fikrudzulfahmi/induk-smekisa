@@ -7,7 +7,7 @@ class Portal_siswa extends Controller
     {
         // Proteksi Halaman: Jika session siswa belum ada, tendang kembali ke login
         if (!isset($_SESSION['login_siswa'])) {
-            header('Location: ' . BASEURL . '/login');
+            header('Location: ' . BASEURL . '/authSiswa/login');
             exit;
         }
 
@@ -29,7 +29,7 @@ class Portal_siswa extends Controller
     {
         // 1. Pastikan pengguna sudah login
         if (!isset($_SESSION['login_siswa'])) {
-            header('Location: ' . BASEURL . '/login');
+            header('Location: ' . BASEURL . '/authSiswa/login');
             exit;
         }
 
@@ -86,7 +86,7 @@ class Portal_siswa extends Controller
     {
         // 1. Pastikan pengguna sudah login
         if (!isset($_SESSION['login_siswa'])) {
-            header('Location: ' . BASEURL . '/login');
+            header('Location: ' . BASEURL . '/authSiswa/login');
             exit;
         }
 
@@ -114,7 +114,7 @@ class Portal_siswa extends Controller
     {
         // Pastikan pengguna sudah login
         if (!isset($_SESSION['login_siswa'])) {
-            header('Location: ' . BASEURL . '/login');
+            header('Location: ' . BASEURL . '/authSiswa/login');
             exit;
         }
 

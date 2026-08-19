@@ -286,11 +286,11 @@
                 <?= isset($data['profil']->nama_sekolah) ? htmlspecialchars($data['profil']->nama_sekolah) : 'Aplikasi Induk'; ?>
             </a>
             <div class="d-flex align-items-center gap-2">
-                <a href="<?= BASEURL; ?>/guru/login" class="btn btn-sm btn-outline-primary me-2 d-none d-md-inline-block">
-                    <i class="mdi mdi-school-outline me-1"></i>Portal Siswa
+                <a href="<?= BASEURL; ?>/authSiswa/login" class="btn btn-sm btn-outline-primary me-2 d-none d-md-inline-block">
+                    <i class="mdi mdi-school-outline me-1"></i>Portal Murid
                 </a>
                 <a href="<?= BASEURL; ?>/guru/login" class="btn btn-sm btn-primary px-4">
-                    <i class="mdi mdi-login me-1"></i>Masuk
+                    <i class="mdi mdi-login me-1"></i>Portal Guru
                 </a>
             </div>
         </div>
@@ -310,7 +310,10 @@
             </p>
             <div class="d-flex gap-3 mt-4 flex-wrap">
                 <a href="<?= BASEURL; ?>/guru/login" class="btn btn-light btn-hero">
-                    <i class="mdi mdi-login me-1"></i>Masuk Aplikasi
+                    <i class="mdi mdi-login me-1"></i>Portal Guru
+                </a>
+                <a href="<?= BASEURL; ?>/authSiswa/login" class="btn btn-outline-light btn-hero">
+                    <i class="mdi mdi-school-outline me-1"></i>Portal Murid
                 </a>
                 <a href="#fitur" class="btn btn-outline-light btn-hero">
                     <i class="mdi mdi-information-outline me-1"></i>Lihat Fitur
@@ -462,10 +465,15 @@
                     <div class="cta">
                         <i class="mdi mdi-rocket-launch-outline" style="font-size:3rem"></i>
                         <h3 class="mt-3">Siap Mengelola Data Sekolah?</h3>
-                        <p class="opacity-75">Masuk ke aplikasi dan mulai kelola data induk siswa dengan lebih rapi.</p>
-                        <a href="<?= BASEURL; ?>/guru/login" class="btn btn-light btn-hero mt-2">
-                            <i class="mdi mdi-login me-1"></i>Masuk Sekarang
-                        </a>
+                        <p class="opacity-75">Masuk ke portal yang sesuai — guru untuk mengelola data, murid untuk melihat data pribadi.</p>
+                        <div class="d-flex gap-3 justify-content-center mt-2 flex-wrap">
+                            <a href="<?= BASEURL; ?>/guru/login" class="btn btn-light btn-hero">
+                                <i class="mdi mdi-login me-1"></i>Portal Guru
+                            </a>
+                            <a href="<?= BASEURL; ?>/authSiswa/login" class="btn btn-outline-light btn-hero">
+                                <i class="mdi mdi-school-outline me-1"></i>Portal Murid
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -503,14 +511,14 @@
                         <li class="mb-2"><a href="<?= BASEURL; ?>/landing"><i class="mdi mdi-chevron-right me-1"></i>Beranda</a></li>
                         <li class="mb-2"><a href="#fitur"><i class="mdi mdi-chevron-right me-1"></i>Fitur</a></li>
                         <li class="mb-2"><a href="#statistik"><i class="mdi mdi-chevron-right me-1"></i>Statistik</a></li>
-                        <li class="mb-2"><a href="<?= BASEURL; ?>/guru/login"><i class="mdi mdi-chevron-right me-1"></i>Portal Siswa</a></li>
+                        <li class="mb-2"><a href="<?= BASEURL; ?>/authSiswa/login"><i class="mdi mdi-chevron-right me-1"></i>Portal Murid</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
                     <h6>Akun</h6>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="<?= BASEURL; ?>/guru/login"><i class="mdi mdi-chevron-right me-1"></i>Masuk Guru / Admin</a></li>
-                        <li class="mb-2"><a href="<?= BASEURL; ?>/guru/login"><i class="mdi mdi-chevron-right me-1"></i>Portal Siswa</a></li>
+                        <li class="mb-2"><a href="<?= BASEURL; ?>/authSiswa/login"><i class="mdi mdi-chevron-right me-1"></i>Portal Murid</a></li>
                     </ul>
                 </div>
             </div>
