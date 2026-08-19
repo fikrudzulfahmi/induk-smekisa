@@ -111,7 +111,7 @@
                             <div class="col-sm-3"><input type="text" class="form-control" placeholder="Kode Pos" name="kd_pos" value="<?= htmlspecialchars($data['siswa']->kd_pos ?? ''); ?>"></div>
                         </div>
                         <div class="row mb-3"><label class="col-sm-3 col-form-label"></label>
-                            <div class="col-sm-1"><label class="col-form-label">Desa/Kel.</label></div>
+                            <div class="col-sm-1"><label class="col-form-label">Provinsi</label></div>
                             <div class="col-sm-8"><input type="text" class="form-control" placeholder="Provinsi" name="provinsi" value="<?= htmlspecialchars($data['siswa']->provinsi ?? ''); ?>"></div>
                         </div>
                         <div class="row mb-3"><label class="col-sm-3 col-form-label">Kontak</label>

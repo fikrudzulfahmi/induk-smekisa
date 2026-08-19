@@ -239,7 +239,7 @@ class Siswa_model
         $this->db->bind('no_akta', $data['no_akta'] ?? '');
         $this->db->bind('jenis_kelamin', $data['jenis_kelamin'] ?? '');
         $this->db->bind('tmpt_lhr', $data['tmpt_lhr'] ?? '');
-        $this->db->bind('tgl_lhr', $data['tgl_lhr'] ?? '');
+        $this->db->bind('tgl_lhr', !empty($data['tgl_lhr']) ? $data['tgl_lhr'] : null);
         $this->db->bind('agama', $data['agama'] ?? '');
         $this->db->bind('kewarganegaraan', $data['kewarganegaraan'] ?? '');
         $this->db->bind('anak_ke', $data['anak_ke'] ?? '');
@@ -277,17 +277,17 @@ class Siswa_model
         $this->db->bind('asal_smp', $data['asal_smp'] ?? '');
         $this->db->bind('alamat_smp', $data['alamat_smp'] ?? '');
         $this->db->bind('npsn_smp', $data['npsn_smp'] ?? '');
-        $this->db->bind('tgl_ijazah_smp', $data['tgl_ijazah_smp'] ?? '');
+        $this->db->bind('tgl_ijazah_smp', !empty($data['tgl_ijazah_smp']) ? $data['tgl_ijazah_smp'] : null);
         $this->db->bind('th_ijazah_smp', $data['th_ijazah_smp'] ?? '');
         $this->db->bind('lama_belajar_smp', $data['lama_belajar_smp'] ?? '');
         $this->db->bind('seri_ijazah_smp', $data['seri_ijazah_smp'] ?? '');
         $this->db->bind('tingkat', $data['tingkat'] ?? '');
         $this->db->bind('komp_keahlian', $data['komp_keahlian'] ?? '');
-        $this->db->bind('diterima_tgl', $data['diterima_tgl'] ?? '');
+        $this->db->bind('diterima_tgl', !empty($data['diterima_tgl']) ? $data['diterima_tgl'] : null);
         $this->db->bind('nama_ayah', $data['nama_ayah'] ?? '');
         $this->db->bind('nik_ayah', $data['nik_ayah'] ?? '');
         $this->db->bind('tmpt_lhr_ayah', $data['tmpt_lhr_ayah'] ?? '');
-        $this->db->bind('tgl_lhr_ayah', $data['tgl_lhr_ayah'] ?? '');
+        $this->db->bind('tgl_lhr_ayah', !empty($data['tgl_lhr_ayah']) ? $data['tgl_lhr_ayah'] : null);
         $this->db->bind('agama_ayah', $data['agama_ayah'] ?? '');
         $this->db->bind('kewarganegaraan_ayah', $data['kewarganegaraan_ayah'] ?? '');
         $this->db->bind('pend_ayah', $data['pend_ayah'] ?? '');
@@ -299,7 +299,7 @@ class Siswa_model
         $this->db->bind('nama_ibu', $data['nama_ibu'] ?? '');
         $this->db->bind('nik_ibu', $data['nik_ibu'] ?? '');
         $this->db->bind('tmpt_lhr_ibu', $data['tmpt_lhr_ibu'] ?? '');
-        $this->db->bind('tgl_lhr_ibu', $data['tgl_lhr_ibu'] ?? '');
+        $this->db->bind('tgl_lhr_ibu', !empty($data['tgl_lhr_ibu']) ? $data['tgl_lhr_ibu'] : null);
         $this->db->bind('agama_ibu', $data['agama_ibu'] ?? '');
         $this->db->bind('kewarganegaraan_ibu', $data['kewarganegaraan_ibu'] ?? '');
         $this->db->bind('pend_ibu', $data['pend_ibu'] ?? '');
@@ -311,7 +311,7 @@ class Siswa_model
         $this->db->bind('nama_wali', $data['nama_wali'] ?? '');
         $this->db->bind('nik_wali', $data['nik_wali'] ?? '');
         $this->db->bind('tmpt_lhr_wali', $data['tmpt_lhr_wali'] ?? '');
-        $this->db->bind('tgl_lhr_wali', $data['tgl_lhr_wali'] ?? '');
+        $this->db->bind('tgl_lhr_wali', !empty($data['tgl_lhr_wali']) ? $data['tgl_lhr_wali'] : null);
         $this->db->bind('agama_wali', $data['agama_wali'] ?? '');
         $this->db->bind('kewarganegaraan_wali', $data['kewarganegaraan_wali'] ?? '');
         $this->db->bind('pend_wali', $data['pend_wali'] ?? '');
