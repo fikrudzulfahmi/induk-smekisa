@@ -13,6 +13,10 @@ $current_page = $url_segments[1] ?: 'dashboard';
                         <h3>SchoolCore</h3>
                     </a>
                 </div>
+                <!-- Tombol tutup sidebar (muncul otomatis di layar < 1200px) -->
+                <a href="#" class="sidebar-toggler x" id="sidebarCloseBtn" aria-label="Tutup Menu">
+                    <i class="bi bi-x-lg"></i>
+                </a>
             </div>
         </div>
         <div class="sidebar-menu">
