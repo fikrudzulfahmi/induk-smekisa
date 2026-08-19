@@ -242,7 +242,19 @@
                     <?php unset($_SESSION['error_login']); ?>
                 <?php endif; ?>
 
+                <!-- Alert Lockout (rate limiting) -->
+                <?php if (!empty($data['lockout'])): ?>
+                    <div class="alert alert-warning fade show" role="alert">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <div>
+                            <strong>AKUN TERKUNCI SEMENTARA</strong>
+                            <div>Terlalu banyak percobaan gagal. Silakan coba lagi dalam <?= $data['lockout']; ?> menit.</div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <form method="POST" action="<?= BASEURL; ?>/authSiswa/prosesLoginSiswa">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($data['csrf_token'] ?? ''); ?>">
                     <div class="mb-3">
                         <div class="input-group">
                             <span class="input-group-text">
@@ -260,20 +272,19 @@
                         </div>
                     </div>
 
-                    <!-- CAPTCHA Section -->
+                    <!-- CAPTCHA Section (server-side — soal dari PHP, jawaban diverifikasi di server) -->
                     <div class="mb-4 p-3" style="background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #435ebe;">
                         <label class="form-label mb-3" style="font-weight: 600; color: #435ebe;">
                             <i class="mdi mdi-security"></i> Verifikasi Keamanan
                         </label>
-                        <div class="captcha-question mb-3" id="captchaQuestion" style="font-size: 1.1rem; font-weight: 600; color: #222; padding: 12px; background-color: #fff; border-radius: 6px; text-align: center;">
-                            <!-- Soal akan ditampilkan di sini -->
+                        <div class="captcha-question mb-3" style="font-size: 1.1rem; font-weight: 600; color: #222; padding: 12px; background-color: #fff; border-radius: 6px; text-align: center;">
+                            <?= htmlspecialchars($data['captcha_soal'] ?? ''); ?>
                         </div>
                         <div class="input-group">
                             <span class="input-group-text" style="background-color: #435ebe; color: #fff;">
                                 <i class="mdi mdi-numeric"></i>
                             </span>
                             <input type="text" class="form-control" id="captcha_answer" name="captcha_answer" placeholder="Masukkan jawaban" required>
-                            <input type="hidden" id="captcha_hash" name="captcha_hash" value="">
                         </div>
                     </div>
 
@@ -281,7 +292,7 @@
                         <input class="form-check-input" type="checkbox" name="remember_me" id="remember_me_siswa">
                         <label class="form-check-label" for="remember_me_siswa">Remember Me</label>
                     </div>
-                    <button type="submit" name="login_siswa" class="btn btn-success">Login sebagai Murid</button>
+                    <button type="submit" name="login_siswa" class="btn btn-success" <?= !empty($data['lockout']) ? 'disabled' : ''; ?>>Login sebagai Murid</button>
                 </form>
 
                 <div class="text-center font-weight-light mt-4">
@@ -297,38 +308,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Generate dan tampilkan CAPTCHA saat halaman dimuat
-        function generateCaptcha() {
-            const num1 = Math.floor(Math.random() * 10) + 1;
-            const num2 = Math.floor(Math.random() * 10) + 1;
-            const operation = Math.random() > 0.5 ? '+' : '-';
-
-            let jawaban;
-            if (operation === '+') {
-                jawaban = num1 + num2;
-            } else {
-                jawaban = num1 - num2;
-            }
-
-            const soal = `${num1} ${operation} ${num2} = ?`;
-
-            // Tampilkan soal
-            const questionElement = document.getElementById('captchaQuestion');
-            if (questionElement) {
-                questionElement.textContent = soal;
-            }
-
-            // Simpan hash jawaban (simple hash untuk keamanan dasar)
-            const jawabanHash = btoa(jawaban);
-            const hashElement = document.getElementById('captcha_hash');
-            if (hashElement) {
-                hashElement.value = jawabanHash;
-            }
-        }
-
-        // Panggil saat DOM selesai dimuat
+        // CAPTCHA kini dibuat & diverifikasi di server (AuthSiswa::login / prosesLoginSiswa).
+        // Tidak ada lagi btoa() client-side yang bisa dibaca dari DevTools.
         window.addEventListener('load', function() {
-            setTimeout(generateCaptcha, 100);
+            console.log('Halaman login murid dimuat.');
         });
     </script>
 
