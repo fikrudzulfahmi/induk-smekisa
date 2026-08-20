@@ -45,13 +45,11 @@
             fill: white !important;
         }
 
-        /* Di layar mobile (<1200px) tombol darkmode digeser ke atas
+        /* Di layar mobile (<1200px) tombol darkmode disembunyikan sementara
            agar tidak menutupi bottom navigation di bawah layar */
         @media screen and (max-width: 1199px) {
             .theme-toggle {
-                bottom: 5.6rem;
-                right: 18px;
-                z-index: 1035;
+                display: none;
             }
         }
 
