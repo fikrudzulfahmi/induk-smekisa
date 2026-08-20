@@ -45,6 +45,16 @@
             fill: white !important;
         }
 
+        /* Di layar mobile (<1200px) tombol darkmode digeser ke atas
+           agar tidak menutupi bottom navigation di bawah layar */
+        @media screen and (max-width: 1199px) {
+            .theme-toggle {
+                bottom: 5.6rem;
+                right: 18px;
+                z-index: 1035;
+            }
+        }
+
         /* ATURAN KHUSUS SAAT TEMA GELAP AKTIF */
         .dark .theme-toggle {
             background-color: #2d3748 !important;
