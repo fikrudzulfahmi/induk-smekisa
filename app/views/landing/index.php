@@ -13,61 +13,169 @@
     <link rel="icon" href="<?= BASEURL; ?>/assets/images/favicon.png" type="image/png">
 
     <style>
+        /* =========================================================
+           TEMA: NAVY — BIRU (GRADASI), PUTIH, AKSEN ORANGE → KUNING
+           ========================================================= */
         :root {
-            --brand: #435ebe;
-            --brand-dark: #3649a8;
-            --brand-soft: #eef1fb;
+            /* Biru navy */
+            --navy-900: #061530;
+            --navy-800: #0a1f44;
+            --navy-700: #102d5e;
+            --blue-600: #1b4fa8;
+            --blue-500: #2563eb;
+            --blue-400: #3b82f6;
+            --blue-100: #dbe7fb;
+            --blue-50: #f2f7ff;
+
+            /* Aksen orange → kuning */
+            --orange-500: #f97316;
+            --orange-400: #fb923c;
+            --yellow-400: #facc15;
+
+            /* Netral */
+            --ink: #0c1a33;
+            --muted: #5c6d8f;
+            --line: #e5ecf8;
+
+            /* Gradasi utama */
+            --grad-navy: linear-gradient(135deg, #061530 0%, #0a1f44 38%, #143a7a 72%, #1b4fa8 100%);
+            --grad-blue: linear-gradient(135deg, #0a1f44 0%, #1b4fa8 55%, #3b82f6 100%);
+            --grad-accent: linear-gradient(135deg, #f97316 0%, #fb923c 45%, #facc15 100%);
+
+            /* Kompatibilitas nama variabel lama */
+            --brand: #1b4fa8;
+            --brand-dark: #0a1f44;
+            --brand-soft: #f2f7ff;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 84px;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #343a40;
+            color: var(--ink);
             background: #ffffff;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* ---------- NAVBAR ---------- */
         .navbar-landing {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid #eef0f5;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--line);
+            border-top: 4px solid transparent;
+            border-image: var(--grad-accent) 1;
+            box-shadow: 0 6px 24px rgba(10, 31, 68, 0.06);
         }
         .navbar-landing .navbar-brand {
-            font-weight: 700;
-            color: var(--brand);
+            font-weight: 800;
+            color: var(--navy-800);
+            letter-spacing: -0.2px;
         }
         .navbar-landing .navbar-brand img {
             height: 34px;
             width: auto;
             margin-right: 8px;
         }
+        .navbar-landing .btn-outline-navy {
+            border: 1.5px solid var(--blue-600);
+            color: var(--blue-600);
+            font-weight: 600;
+            background: transparent;
+        }
+        .navbar-landing .btn-outline-navy:hover {
+            background: var(--blue-600);
+            color: #fff;
+        }
+
+        /* ---------- TOMBOL ---------- */
+        .btn-hero {
+            padding: 12px 28px;
+            font-weight: 700;
+            border-radius: 50px;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+        }
+        /* CTA utama: gradasi orange → kuning, teks navy */
+        .btn-cta {
+            background: var(--grad-accent);
+            color: var(--navy-900);
+            border: none;
+            box-shadow: 0 10px 24px rgba(249, 115, 22, 0.32);
+        }
+        .btn-cta:hover,
+        .btn-cta:focus {
+            color: var(--navy-900);
+            filter: brightness(1.06);
+            transform: translateY(-2px);
+            box-shadow: 0 16px 32px rgba(249, 115, 22, 0.42);
+        }
+        /* Sekunder di atas latar gelap */
+        .btn-ghost {
+            background: transparent;
+            border: 1.5px solid rgba(255, 255, 255, 0.55);
+            color: #fff;
+        }
+        .btn-ghost:hover,
+        .btn-ghost:focus {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: #fff;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        /* Sekunder di atas latar terang */
+        .btn-outline-navy {
+            background: transparent;
+            border: 1.5px solid var(--blue-600);
+            color: var(--blue-600);
+            font-weight: 700;
+        }
+        .btn-outline-navy:hover {
+            background: var(--blue-600);
+            color: #fff;
+        }
 
         /* ---------- HERO ---------- */
         .hero {
-            background: linear-gradient(135deg, #435ebe 0%, #6a8cff 55%, #9db4ff 100%);
+            background: var(--grad-navy);
             color: #fff;
-            padding: 96px 0 88px;
+            padding: 104px 0 96px;
             position: relative;
             overflow: hidden;
         }
         .hero::after {
             content: '';
             position: absolute;
-            right: -120px;
-            top: -120px;
-            width: 420px;
-            height: 420px;
+            right: -160px;
+            top: -170px;
+            width: 540px;
+            height: 540px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.08);
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.38) 0%, rgba(249, 115, 22, 0) 68%);
+            pointer-events: none;
         }
         .hero::before {
             content: '';
             position: absolute;
-            left: -80px;
-            bottom: -140px;
-            width: 360px;
-            height: 360px;
+            left: -190px;
+            bottom: -210px;
+            width: 580px;
+            height: 580px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.06);
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.45) 0%, rgba(59, 130, 246, 0) 70%);
+            pointer-events: none;
+        }
+        .hero .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 58px 58px;
+            -webkit-mask-image: radial-gradient(circle at 28% 18%, #000 0%, transparent 72%);
+            mask-image: radial-gradient(circle at 28% 18%, #000 0%, transparent 72%);
+            pointer-events: none;
         }
         .hero .container {
             position: relative;
@@ -75,134 +183,213 @@
         }
         .hero h1 {
             font-weight: 800;
-            font-size: 2.6rem;
+            font-size: clamp(2rem, 4.2vw, 2.75rem);
             line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+        .hero h1 .accent {
+            background: var(--grad-accent);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
         }
         .hero p.lead {
-            font-size: 1.15rem;
-            opacity: 0.95;
+            font-size: 1.12rem;
+            color: rgba(255, 255, 255, 0.86);
             max-width: 620px;
-        }
-        .hero .btn-hero {
-            padding: 12px 28px;
-            font-weight: 600;
-            border-radius: 50px;
-        }
-        .hero .btn-light {
-            background: #fff;
-            color: var(--brand);
-            border: none;
-        }
-        .hero .btn-outline-light {
-            border-color: rgba(255, 255, 255, 0.7);
         }
         .hero .hero-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.16);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            padding: 7px 18px;
             border-radius: 50px;
             font-size: 0.85rem;
-            margin-bottom: 20px;
+            font-weight: 500;
+            margin-bottom: 22px;
+            color: #eaf1ff;
+        }
+        .hero .hero-badge i {
+            color: var(--yellow-400);
+            font-size: 1.05rem;
         }
         .hero-stats {
             display: flex;
-            gap: 40px;
-            margin-top: 40px;
+            gap: 0;
+            margin-top: 48px;
             flex-wrap: wrap;
         }
         .hero-stats .stat {
-            text-align: center;
-            min-width: 100px;
+            text-align: left;
+            min-width: 130px;
+            padding: 0 28px;
+            border-left: 1px solid rgba(255, 255, 255, 0.16);
+        }
+        .hero-stats .stat:first-child {
+            padding-left: 0;
+            border-left: none;
         }
         .hero-stats .stat .angka {
             font-size: 1.9rem;
             font-weight: 800;
+            line-height: 1.1;
+            background: var(--grad-accent);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
         }
         .hero-stats .stat .label {
-            font-size: 0.85rem;
-            opacity: 0.85;
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.72);
+            letter-spacing: 0.3px;
         }
 
         /* ---------- SEKSI UMUM ---------- */
         .section {
-            padding: 72px 0;
+            padding: 80px 0;
         }
         .section-title {
             text-align: center;
-            margin-bottom: 48px;
+            margin-bottom: 52px;
         }
         .section-title .kicker {
-            color: var(--brand);
+            display: inline-block;
+            color: var(--orange-500);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 0.8rem;
-            font-weight: 700;
+            letter-spacing: 2.4px;
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+        .section-title .kicker::after {
+            content: '';
+            display: block;
+            height: 3px;
+            border-radius: 3px;
+            background: var(--grad-accent);
+            margin: 8px auto 0;
+            width: 54px;
         }
         .section-title h2 {
             font-weight: 800;
-            margin-top: 6px;
+            color: var(--navy-800);
+            margin-top: 10px;
+            letter-spacing: -0.4px;
         }
 
         /* ---------- FITUR ---------- */
         .fitur-card {
-            border: 1px solid #eef0f5;
-            border-radius: 14px;
-            padding: 28px 22px;
+            position: relative;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 30px 24px;
             height: 100%;
             background: #fff;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            overflow: hidden;
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+        .fitur-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            background: var(--grad-accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.28s ease;
         }
         .fitur-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 28px rgba(67, 94, 190, 0.12);
+            transform: translateY(-6px);
+            border-color: #cfe0f8;
+            box-shadow: 0 20px 40px rgba(10, 31, 68, 0.12);
+        }
+        .fitur-card:hover::after {
+            transform: scaleX(1);
         }
         .fitur-card .icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
+            width: 58px;
+            height: 58px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6rem;
-            margin-bottom: 16px;
-            background: var(--brand-soft);
-            color: var(--brand);
+            font-size: 1.65rem;
+            margin-bottom: 18px;
+            background: var(--grad-blue);
+            color: #fff;
+            box-shadow: 0 10px 22px rgba(27, 79, 168, 0.28);
         }
         .fitur-card h5 {
             font-weight: 700;
+            color: var(--navy-800);
         }
         .fitur-card p {
-            color: #6c757d;
+            color: var(--muted);
             font-size: 0.95rem;
             margin-bottom: 0;
         }
 
-        /* ---------- STATISTIK ---------- */
+        /* ---------- STATISTIK (latar navy) ---------- */
         .statistik {
-            background: var(--brand-soft);
+            background: var(--grad-blue);
+            position: relative;
+            overflow: hidden;
+        }
+        .statistik::after {
+            content: '';
+            position: absolute;
+            right: -140px;
+            top: -140px;
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(250, 204, 21, 0.22) 0%, rgba(250, 204, 21, 0) 70%);
+            pointer-events: none;
+        }
+        .statistik .section-title h2 {
+            color: #fff;
+        }
+        .statistik .section-title .kicker {
+            color: var(--yellow-400);
+        }
+        .statistik .container {
+            position: relative;
+            z-index: 2;
         }
         .stat-card {
-            background: #fff;
-            border-radius: 14px;
-            padding: 28px 20px;
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 18px;
+            padding: 30px 20px;
             text-align: center;
-            box-shadow: 0 4px 14px rgba(67, 94, 190, 0.08);
+            backdrop-filter: blur(6px);
+            box-shadow: 0 14px 34px rgba(4, 15, 38, 0.28);
+            transition: transform 0.22s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
         .stat-card .icon {
-            font-size: 2.2rem;
-            color: var(--brand);
+            font-size: 2.1rem;
+            background: var(--grad-accent);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
         }
         .stat-card .angka {
             font-size: 2.2rem;
             font-weight: 800;
-            color: #23243a;
+            color: var(--navy-800);
+            line-height: 1.15;
         }
         .stat-card .label {
-            color: #6c757d;
-            font-size: 0.9rem;
+            color: var(--muted);
+            font-size: 0.88rem;
         }
 
         /* ---------- CARA PAKAI ---------- */
@@ -211,66 +398,96 @@
         }
         .langkah-item {
             position: relative;
-            padding-left: 76px;
-            margin-bottom: 28px;
+            padding-left: 78px;
+            margin-bottom: 30px;
         }
         .langkah-item .nomor {
             position: absolute;
             left: 0;
             top: 0;
-            width: 52px;
-            height: 52px;
+            width: 54px;
+            height: 54px;
             border-radius: 50%;
-            background: var(--brand);
-            color: #fff;
+            background: var(--grad-accent);
+            color: var(--navy-900);
             font-weight: 800;
             font-size: 1.2rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.3);
         }
         .langkah-item h5 {
             font-weight: 700;
+            color: var(--navy-800);
         }
         .langkah-item p {
-            color: #6c757d;
+            color: var(--muted);
             margin-bottom: 0;
         }
 
         /* ---------- CTA & FOOTER ---------- */
         .cta {
-            background: linear-gradient(135deg, #23243a 0%, #435ebe 100%);
+            background: var(--grad-navy);
             color: #fff;
-            border-radius: 18px;
-            padding: 48px 40px;
+            border-radius: 22px;
+            padding: 50px 40px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 26px 50px rgba(10, 31, 68, 0.28);
+        }
+        .cta::after {
+            content: '';
+            position: absolute;
+            right: -110px;
+            bottom: -130px;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.34) 0%, rgba(249, 115, 22, 0) 70%);
+            pointer-events: none;
+        }
+        .cta > * {
+            position: relative;
+            z-index: 2;
         }
         .cta h3 {
             font-weight: 800;
         }
+        .cta i.mdi {
+            color: var(--yellow-400);
+        }
         .footer {
-            background: #23243a;
-            color: #b9bcc7;
-            padding: 48px 0 20px;
+            background: var(--navy-900);
+            color: #a9b8d4;
+            padding: 52px 0 20px;
             font-size: 0.92rem;
+            border-top: 4px solid transparent;
+            border-image: var(--grad-accent) 1;
         }
         .footer h6 {
             color: #fff;
             font-weight: 700;
             margin-bottom: 14px;
         }
+        .footer h6 i.mdi {
+            color: var(--yellow-400);
+        }
         .footer a {
-            color: #b9bcc7;
+            color: #a9b8d4;
             text-decoration: none;
+            transition: color 0.16s ease;
         }
         .footer a:hover {
-            color: #fff;
+            color: var(--yellow-400);
         }
         .footer .copyright {
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.09);
+            padding-top: 18px;
             margin-top: 32px;
             text-align: center;
+            color: #8095b8;
         }
     </style>
 </head>
@@ -286,10 +503,10 @@
                 <?= isset($data['profil']->nama_sekolah) ? htmlspecialchars($data['profil']->nama_sekolah) : 'Aplikasi Induk'; ?>
             </a>
             <div class="d-flex align-items-center gap-2">
-                <a href="<?= BASEURL; ?>/authSiswa/login" class="btn btn-sm btn-outline-primary me-2 d-none d-md-inline-block">
+                <a href="<?= BASEURL; ?>/authSiswa/login" class="btn btn-sm btn-outline-navy me-2 d-none d-md-inline-block">
                     <i class="mdi mdi-school-outline me-1"></i>Portal Murid
                 </a>
-                <a href="<?= BASEURL; ?>/guru/login" class="btn btn-sm btn-primary px-4">
+                <a href="<?= BASEURL; ?>/guru/login" class="btn btn-sm btn-cta px-4">
                     <i class="mdi mdi-login me-1"></i>Portal Guru
                 </a>
             </div>
@@ -298,24 +515,25 @@
 
     <!-- ================= HERO ================= -->
     <header class="hero">
+        <div class="hero-grid"></div>
         <div class="container">
             <span class="hero-badge">
                 <i class="mdi mdi-shield-check-outline"></i>
                 Sistem Informasi Data Induk Siswa
             </span>
-            <h1>Kelola Data Siswa Sekolah<br>dalam Satu Aplikasi</h1>
+            <h1>Kelola <span class="accent">Data Siswa Sekolah</span><br>dalam Satu Aplikasi</h1>
             <p class="lead mt-3">
                 Aplikasi Induk membantu sekolah mencatat, mengelola, dan memantau data induk siswa,
                 rombongan belajar, jurusan, hingga guru — cepat, rapi, dan terpusat.
             </p>
             <div class="d-flex gap-3 mt-4 flex-wrap">
-                <a href="<?= BASEURL; ?>/guru/login" class="btn btn-light btn-hero">
+                <a href="<?= BASEURL; ?>/guru/login" class="btn btn-cta btn-hero">
                     <i class="mdi mdi-login me-1"></i>Portal Guru
                 </a>
-                <a href="<?= BASEURL; ?>/authSiswa/login" class="btn btn-outline-light btn-hero">
+                <a href="<?= BASEURL; ?>/authSiswa/login" class="btn btn-ghost btn-hero">
                     <i class="mdi mdi-school-outline me-1"></i>Portal Murid
                 </a>
-                <a href="#fitur" class="btn btn-outline-light btn-hero">
+                <a href="#fitur" class="btn btn-ghost btn-hero">
                     <i class="mdi mdi-information-outline me-1"></i>Lihat Fitur
                 </a>
             </div>
@@ -467,10 +685,10 @@
                         <h3 class="mt-3">Siap Mengelola Data Sekolah?</h3>
                         <p class="opacity-75">Masuk ke portal yang sesuai — guru untuk mengelola data, murid untuk melihat data pribadi.</p>
                         <div class="d-flex gap-3 justify-content-center mt-2 flex-wrap">
-                            <a href="<?= BASEURL; ?>/guru/login" class="btn btn-light btn-hero">
+                            <a href="<?= BASEURL; ?>/guru/login" class="btn btn-cta btn-hero">
                                 <i class="mdi mdi-login me-1"></i>Portal Guru
                             </a>
-                            <a href="<?= BASEURL; ?>/authSiswa/login" class="btn btn-outline-light btn-hero">
+                            <a href="<?= BASEURL; ?>/authSiswa/login" class="btn btn-ghost btn-hero">
                                 <i class="mdi mdi-school-outline me-1"></i>Portal Murid
                             </a>
                         </div>
