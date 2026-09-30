@@ -1,10 +1,15 @@
+<?php
+$namaSekolah = (isset($data['profil']->nama_sekolah) && $data['profil']->nama_sekolah)
+    ? $data['profil']->nama_sekolah
+    : 'Aplikasi Induk Siswa';
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title><?= $data['judul']; ?> | Aplikasi Siswa</title>
+    <title><?= $data['judul']; ?> | Portal Guru</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
@@ -13,281 +18,478 @@
     <link rel="icon" href="<?= BASEURL; ?>/assets/images/favicon.png" type="image/png">
 
     <style>
-        body,
-        html {
-            height: 100%;
+        /* =========================================================
+           TEMA LOGIN — disamakan dengan landing page
+           NAVY (GRADASI) · PUTIH · AKSEN ORANGE → KUNING
+           ========================================================= */
+        :root {
+            --navy-900: #061530;
+            --navy-800: #0a1f44;
+            --navy-700: #102d5e;
+            --blue-600: #1b4fa8;
+            --blue-500: #2563eb;
+            --blue-400: #3b82f6;
+            --blue-100: #dbe7fb;
+            --blue-50: #f2f7ff;
+
+            --orange-500: #f97316;
+            --orange-400: #fb923c;
+            --yellow-400: #facc15;
+
+            --ink: #0c1a33;
+            --muted: #5c6d8f;
+            --line: #e5ecf8;
+
+            --grad-navy: linear-gradient(135deg, #061530 0%, #0a1f44 38%, #143a7a 72%, #1b4fa8 100%);
+            --grad-blue: linear-gradient(135deg, #0a1f44 0%, #1b4fa8 55%, #3b82f6 100%);
+            --grad-accent: linear-gradient(135deg, #f97316 0%, #fb923c 45%, #facc15 100%);
+        }
+
+        body.auth-body {
             margin: 0;
-            background: rgb(252, 252, 252);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .auth-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: var(--grad-navy);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--ink);
+            position: relative;
+            overflow-x: hidden;
         }
 
-        .auth-content {
+        /* Dekorasi lingkaran (sama gaya dengan hero landing) */
+        body.auth-body::after {
+            content: '';
+            position: absolute;
+            right: -160px;
+            top: -170px;
+            width: 540px;
+            height: 540px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.38) 0%, rgba(249, 115, 22, 0) 68%);
+            pointer-events: none;
+        }
+
+        body.auth-body::before {
+            content: '';
+            position: absolute;
+            left: -180px;
+            bottom: -200px;
+            width: 520px;
+            height: 520px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.30) 0%, rgba(59, 130, 246, 0) 70%);
+            pointer-events: none;
+        }
+
+        /* ---------- KARTU UTAMA ---------- */
+        .auth-card {
+            position: relative;
+            z-index: 1;
             display: flex;
             width: 100%;
-            max-width: 900px;
-            border-radius: 15px;
-            background-color: #ffffff;
-            box-shadow: 0 8px 25px rgba(67, 94, 190, 0.1);
+            max-width: 940px;
+            background: #ffffff;
+            border-radius: 20px;
             overflow: hidden;
-            flex-wrap: nowrap;
+            box-shadow: 0 30px 70px rgba(6, 21, 48, 0.45);
         }
 
-        .form-container {
-            flex: 0 0 480px;
-            padding: 40px 30px;
+        /* ---------- PANEL BRANDING (kiri) ---------- */
+        .auth-brand {
+            flex: 0 0 360px;
+            background: var(--grad-blue);
+            color: #fff;
+            padding: 38px 32px;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
         }
 
-        .form-container h4 {
-            font-weight: 700;
-            color: #435ebe;
-            margin-bottom: 10px;
-            text-align: center;
+        .auth-brand::after {
+            content: '';
+            position: absolute;
+            right: -110px;
+            bottom: -120px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.35) 0%, rgba(249, 115, 22, 0) 70%);
         }
 
-        .form-container h6 {
-            font-weight: 400;
-            color: #6c757d;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        /* --- Tombol Kembali ke Beranda --- */
-        .btn-back-beranda {
+        .brand-back {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            color: #435ebe;
+            align-self: flex-start;
+            color: #eaf1ff;
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 14px;
-            padding: 6px 12px;
+            font-size: 0.85rem;
+            padding: 6px 14px;
             border-radius: 50px;
-            background: #eef1fb;
-            transition: background 0.2s ease, color 0.2s ease;
-            align-self: flex-start;
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.08);
+            transition: background 0.2s ease, border-color 0.2s ease;
         }
 
-        .btn-back-beranda:hover {
-            background: #435ebe;
+        .brand-back:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: #fff;
             color: #fff;
         }
 
-        .btn-back-beranda i {
-            font-size: 1.1rem;
+        .brand-logo {
+            margin: 26px 0 14px;
         }
 
-        /* --- Input Styles --- */
-        .input-group-text {
-            background-color: #eef0f8;
-            color: #435ebe;
-            border: none;
-            border-radius: 8px 0 0 8px;
-            min-width: 45px;
-            justify-content: center;
-            font-size: 1.2rem;
+        .brand-logo img {
+            height: 52px;
+            width: auto;
+            filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.25));
         }
 
-        .form-control {
-            border-radius: 0 8px 8px 0;
-            border: 1px solid #435ebe;
-            font-size: 1rem;
-            padding: 12px 16px;
-            color: #222;
+        .auth-brand h2 {
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.45rem;
+            line-height: 1.25;
+            margin: 0 0 6px;
+            letter-spacing: -0.2px;
         }
 
-        .form-control:focus {
-            border-color: #384f9e;
-            box-shadow: 0 0 8px rgba(67, 94, 190, 0.4);
-            outline: none;
+        .brand-tag {
+            color: rgba(255, 255, 255, 0.76);
+            font-size: 0.9rem;
+            margin-bottom: 18px;
         }
 
-        .btn-success {
-            background: linear-gradient(45deg, #435ebe, #384f9e);
-            border: none;
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            padding: 7px 16px;
+            border-radius: 50px;
+            font-size: 0.82rem;
             font-weight: 600;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            width: 100%;
-            box-shadow: 0 6px 12px rgba(67, 94, 190, 0.3);
-            transition: all 0.3s ease;
+            color: #eaf1ff;
+            margin-bottom: 22px;
         }
 
-        .btn-success:hover {
-            background: linear-gradient(45deg, #384f9e, #435ebe);
-            box-shadow: 0 12px 25px rgba(56, 79, 158, 0.5);
-            transform: translateY(-2px);
+        .brand-badge i {
+            color: var(--yellow-400);
+            font-size: 1.05rem;
         }
 
-        .text-center.font-weight-light {
-            font-size: 0.95rem;
-            color: #6c757d;
-            margin-top: 24px;
-            text-align: center;
+        .brand-features {
+            list-style: none;
+            padding: 0;
+            margin: auto 0 0;
+            position: relative;
+            z-index: 1;
         }
 
-        .text-center.font-weight-light a {
-            color: #435ebe;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .text-center.font-weight-light a:hover {
-            color: #384f9e;
-        }
-
-        .auth-bg {
-            flex: 1;
-            display: none;
-            border-radius: 0 12px 12px 0;
-            overflow: hidden;
-        }
-
-        .auth-bg img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        @media (min-width: 992px) {
-            .auth-bg {
-                display: block;
-            }
-        }
-
-        @media (max-width: 991px) {
-            .auth-content {
-                flex-direction: column;
-                border-radius: 0;
-                box-shadow: none;
-            }
-
-            .form-container {
-                max-width: 400px;
-                margin: 0 auto;
-                border-radius: 12px;
-                box-shadow: 0 12px 25px rgba(67, 94, 190, 0.1);
-                background: #fff;
-            }
-
-            .auth-bg {
-                display: none !important;
-            }
-        }
-
-        /* Alert Styles */
-        .alert {
-            border-radius: 8px;
-            border: none;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
+        .brand-features li {
             display: flex;
             align-items: flex-start;
-            gap: 12px;
-            padding: 15px 15px;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.86);
+            font-size: 0.88rem;
+            margin-bottom: 12px;
+            line-height: 1.45;
         }
 
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
+        .brand-features i {
+            color: var(--yellow-400);
+            font-size: 1.05rem;
+            margin-top: 1px;
         }
 
-        .alert-danger strong {
-            font-weight: 700;
-            display: block;
+        /* ---------- PANEL FORM (kanan) ---------- */
+        .auth-form-panel {
+            flex: 1;
+            padding: 38px 36px;
+        }
+
+        .auth-form-panel h4 {
+            font-weight: 800;
+            color: var(--navy-800);
             margin-bottom: 4px;
         }
 
-        .alert-danger i {
-            font-size: 1.3rem;
+        .auth-form-panel .sub {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--navy-800);
+            font-size: 0.88rem;
+            margin-bottom: 6px;
+        }
+
+        .form-control,
+        .input-group-text {
+            border: 1.5px solid var(--line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 0.96rem;
+            color: var(--ink);
+            background-color: #fff;
+        }
+
+        .input-group-text {
+            background: var(--blue-50);
+            color: var(--blue-600);
+            border-right: none;
+            font-size: 1.15rem;
+            padding: 12px 14px;
+        }
+
+        .form-control {
+            border-left: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--blue-500);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+            color: var(--ink);
+            background-color: #fff;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: var(--blue-500);
+            border-right: none;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--blue-600);
+            border-color: var(--blue-600);
+        }
+
+        .form-check-label {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        /* ---------- TOMBOL CTA (orange → kuning, teks navy) ---------- */
+        .btn-cta {
+            width: 100%;
+            background: var(--grad-accent);
+            color: var(--navy-900);
+            border: none;
+            font-weight: 800;
+            padding: 13px 24px;
+            border-radius: 50px;
+            font-size: 1rem;
+            box-shadow: 0 10px 24px rgba(249, 115, 22, 0.32);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+        }
+
+        .btn-cta:hover,
+        .btn-cta:focus {
+            color: var(--navy-900);
+            filter: brightness(1.06);
+            transform: translateY(-2px);
+            box-shadow: 0 16px 32px rgba(249, 115, 22, 0.42);
+        }
+
+        .auth-alt {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .auth-alt a {
+            color: var(--blue-600);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .auth-alt a:hover {
+            color: var(--orange-500);
+        }
+
+        /* ---------- ALERT ---------- */
+        .alert {
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 14px 16px;
+        }
+
+        .alert i {
+            font-size: 1.15rem;
             margin-top: 2px;
             flex-shrink: 0;
         }
 
-        .btn-close {
-            color: #721c24;
-            position: absolute;
-            right: 15px;
-            top: 15px;
+        .alert-danger {
+            background: #fdecec;
+            color: #86181d;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert strong {
+            display: block;
+            font-weight: 800;
+            margin-bottom: 2px;
+        }
+
+        /* ---------- HEADER RINGKAS (mobile) ---------- */
+        .auth-mobile-head {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 20px;
+            background: var(--grad-blue);
+            color: #fff;
+        }
+
+        .auth-mobile-head img {
+            height: 36px;
+            width: auto;
+        }
+
+        .auth-mobile-head .nama {
+            font-weight: 800;
+            font-size: 0.98rem;
+            line-height: 1.2;
+        }
+
+        .auth-mobile-head .kecil {
+            font-size: 0.76rem;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 991px) {
+            body.auth-body {
+                padding: 16px;
+                align-items: flex-start;
+            }
+
+            .auth-card {
+                flex-direction: column;
+                margin: 12px 0;
+            }
+
+            .auth-brand {
+                display: none;
+            }
+
+            .auth-mobile-head {
+                display: flex;
+            }
+
+            .auth-form-panel {
+                padding: 26px 20px 30px;
+            }
         }
     </style>
 </head>
 
-<body>
-    <div class="auth-wrapper">
-        <div class="auth-content">
-            <div class="form-container">
-                <a href="<?= BASEURL; ?>/landing" class="btn-back-beranda">
-                    <i class="mdi mdi-arrow-left"></i> Kembali ke Beranda
-                </a>
-                <h4 id="loginTitle">Login Guru</h4>
-                <h6>Portal Guru / Admin — silakan masuk untuk melanjutkan</h6>
+<body class="auth-body">
+    <div class="auth-card">
+        <!-- ===== Panel branding (desktop) ===== -->
+        <aside class="auth-brand">
+            <a href="<?= BASEURL; ?>/landing" class="brand-back">
+                <i class="mdi mdi-arrow-left"></i> Kembali ke Beranda
+            </a>
+            <div class="brand-logo">
+                <img src="<?= BASEURL; ?>/assets/images/logo_smki.png" alt="Logo Sekolah"
+                     onerror="this.style.display='none'">
+            </div>
+            <h2><?= htmlspecialchars($namaSekolah); ?></h2>
+            <p class="brand-tag">Sistem Informasi Data Induk Siswa</p>
+            <span class="brand-badge"><i class="mdi mdi-shield-account-outline"></i> Portal Guru / Admin</span>
+            <ul class="brand-features">
+                <li><i class="mdi mdi-check-circle"></i> Kelola data induk siswa &amp; rombel</li>
+                <li><i class="mdi mdi-check-circle"></i> Cetak dokumen administrasi siswa</li>
+                <li><i class="mdi mdi-check-circle"></i> Pantau statistik dan aktivitas sistem</li>
+            </ul>
+        </aside>
 
-                <!-- Alert Error -->
-                <?php if (isset($_SESSION['error_login'])): ?>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert">
-                        <i class="bi bi-exclamation-circle-fill"></i>
-                        <div>
-                            <strong>PERHATIAN!</strong>
-                            <div><?= htmlspecialchars($_SESSION['error_login']); ?></div>
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    <?php unset($_SESSION['error_login']); ?>
-                <?php endif; ?>
-
-                <form method="POST" action="<?= BASEURL; ?>/guru/prosesLogin">
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="mdi mdi-account"></i>
-                            </span>
-                            <input type="text" class="form-control" id="username" name="username" placeholder="Username Guru" required>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="mdi mdi-lock"></i>
-                            </span>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                        </div>
-                    </div>
-                    <div class="form-check mb-4">
-                        <input class="form-check-input" type="checkbox" name="remember_me" id="remember_me_guru">
-                        <label class="form-check-label" for="remember_me_guru">Remember Me</label>
-                    </div>
-                    <button type="submit" name="login_guru" class="btn btn-success">Login sebagai Guru</button>
-                </form>
-
-                <div class="text-center font-weight-light mt-4">
-                    Murid / Siswa? <a href="<?= BASEURL; ?>/authSiswa/login">Masuk sebagai Murid</a>
+        <!-- ===== Panel form ===== -->
+        <section class="auth-form-panel">
+            <!-- Header ringkas untuk mobile -->
+            <div class="auth-mobile-head">
+                <img src="<?= BASEURL; ?>/assets/images/logo_smki.png" alt="Logo Sekolah"
+                     onerror="this.style.display='none'">
+                <div>
+                    <div class="nama"><?= htmlspecialchars($namaSekolah); ?></div>
+                    <div class="kecil">Portal Guru / Admin</div>
                 </div>
             </div>
 
-            <div class="auth-bg">
-                <img src="<?= BASEURL; ?>/assets/images/bg_login.jpg" alt="Gambar Latar Login">
+            <a href="<?= BASEURL; ?>/landing" class="brand-back d-inline-flex d-lg-none mb-3"
+               style="color: var(--blue-600); border-color: var(--blue-100); background: var(--blue-50);">
+                <i class="mdi mdi-arrow-left"></i> Beranda
+            </a>
+
+            <h4>Login Guru</h4>
+            <p class="sub">Masuk untuk mengelola data induk siswa.</p>
+
+            <!-- Alert Error -->
+            <?php if (isset($_SESSION['error_login'])): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    <div>
+                        <strong>PERHATIAN!</strong>
+                        <div><?= htmlspecialchars($_SESSION['error_login']); ?></div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <?php unset($_SESSION['error_login']); ?>
+            <?php endif; ?>
+
+            <form method="POST" action="<?= BASEURL; ?>/guru/prosesLogin">
+                <div class="mb-3">
+                    <label class="form-label" for="username">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="mdi mdi-account"></i></span>
+                        <input type="text" class="form-control" id="username" name="username"
+                               placeholder="Username guru / admin" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="mdi mdi-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="Password" required>
+                    </div>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="remember_me" id="remember_me_guru">
+                    <label class="form-check-label" for="remember_me_guru">Ingat saya</label>
+                </div>
+
+                <button type="submit" name="login_guru" class="btn btn-cta">Login sebagai Guru</button>
+            </form>
+
+            <div class="auth-alt">
+                Murid / Siswa? <a href="<?= BASEURL; ?>/authSiswa/login">Masuk sebagai Murid</a>
             </div>
-        </div>
+        </section>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // CAPTCHA & toggle hanya dipakai di halaman login murid (portal_siswa/login.php)
-        // Halaman ini murni login guru — tidak perlu script tambahan.
         window.addEventListener('load', function() {
             console.log('Halaman login guru dimuat.');
         });

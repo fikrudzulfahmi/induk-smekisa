@@ -52,6 +52,14 @@ class AuthSiswa extends Controller
         }
 
         $data['judul'] = 'Login Murid';
+
+        // Data profil sekolah untuk identitas halaman login (disamakan dgn landing page)
+        try {
+            $data['profil'] = $this->model('ProfilSekolah_model')->getProfil();
+        } catch (\Throwable $e) {
+            $data['profil'] = null;
+        }
+
         $this->view('portal_siswa/login', $data);
     }
 

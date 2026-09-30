@@ -20,6 +20,13 @@ class Guru extends Controller
         // 2. Siapkan data untuk View (seperti judul halaman)
         $data['judul'] = 'Login';
 
+        // Data profil sekolah untuk identitas halaman login (disamakan dgn landing page)
+        try {
+            $data['profil'] = $this->model('ProfilSekolah_model')->getProfil();
+        } catch (\Throwable $e) {
+            $data['profil'] = null;
+        }
+
         // 3. PANGGIL VIEW, JANGAN GUNAKAN HEADER LOCATION REDIRECT!
         // Pastikan path 'guru/login' sesuai dengan lokasi file HTML yang kamu kirimkan.
         // Contoh jika file HTML-nya ada di: app/views/guru/login.php
