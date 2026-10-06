@@ -1364,6 +1364,35 @@ class Siswa_model
     }
 
 
+    /**
+     * Daftar kolom & alias untuk kontrak API integrasi.
+     * Field opsional dinormalisasi: nilai kosong / '-' dikembalikan null.
+     * Catatan: no_induk = NIS yang dipakai aplikasi induk.
+     */
+    private function kolomApi()
+    {
+        return "
+                di.no_induk AS nis,
+                di.nama_siswa AS name,
+                NULLIF(NULLIF(di.tmpt_lhr, ''), '-') AS birth_place,
+                NULLIF(di.tgl_lhr, '0000-00-00') AS birth_date,
+                NULLIF(NULLIF(di.alamat, ''), '-') AS address,
+                COALESCE(
+                    NULLIF(NULLIF(di.nama_wali, ''), '-'),
+                    NULLIF(NULLIF(di.nama_ayah, ''), '-'),
+                    NULLIF(NULLIF(di.nama_ibu, ''), '-')
+                ) AS guardian_name,
+                COALESCE(
+                    NULLIF(NULLIF(di.hp_wali, ''), '-'),
+                    NULLIF(NULLIF(di.hp_ayah, ''), '-'),
+                    NULLIF(NULLIF(di.hp_ibu, ''), '-'),
+                    NULLIF(NULLIF(di.no_hp, ''), '-')
+                ) AS guardian_phone,
+                r.nama_rombel AS rombel,
+                NULLIF(r.tingkat, '') AS tingkat
+        ";
+    }
+
     public function searchSiswa($keyword, $tingkat = '')
     {
         // Prioritaskan filter id_status = 1 dan pencarian pada subquery 
@@ -1374,10 +1403,8 @@ class Siswa_model
         }
 
         $query = "
-            SELECT 
-                di.no_induk AS nis, di.nama_siswa AS name, di.tmpt_lhr AS birth_place, 
-                di.tgl_lhr AS birth_date, di.alamat AS address, di.nama_ayah AS guardian_name, 
-                di.no_hp AS guardian_phone, r.nama_rombel AS rombel, r.tingkat AS tingkat
+            SELECT
+                {$this->kolomApi()}
             FROM (
                 SELECT * FROM {$this->table} di
                 WHERE id_status = 1 $tingkatQuery
@@ -1400,21 +1427,25 @@ class Siswa_model
     // Query untuk mengambil 1 data spesifik (Sync)
     public function getSiswaByNis($nis)
     {
-        $query = "SELECT 
-                di.no_induk AS nis, 
-                di.nama_siswa AS name, 
-                di.tmpt_lhr AS birth_place, 
-                di.tgl_lhr AS birth_date, 
-                di.alamat AS address, 
-                di.nama_ayah AS guardian_name, 
-                di.no_hp AS guardian_phone, 
-                r.nama_rombel AS rombel,
-                r.tingkat AS tingkat
+        // Cocokkan fleksibel: NIS penuh (mis. "29648/1382/004") atau angka depannya
+        // saja (mis. "29648"), atau NISN — supaya aplikasi pemanggil tidak gagal
+        // hanya karena format NIS berbeda.
+        $query = "SELECT
+                {$this->kolomApi()}
               FROM {$this->table} di
               LEFT JOIN rombel r ON di.rombel = r.id_rombel
-              WHERE di.no_induk = '$nis' LIMIT 1";
+              WHERE di.no_induk = :nis1
+                 OR SUBSTRING_INDEX(di.no_induk, '/', 1) = :nis2
+                 OR di.nisn = :nis3
+              ORDER BY (di.no_induk = :nis4) DESC
+              LIMIT 1";
 
         $this->db->query($query);
+        $this->db->bind(':nis1', $nis);
+        $this->db->bind(':nis2', $nis);
+        $this->db->bind(':nis3', $nis);
+        $this->db->bind(':nis4', $nis);
+
         return $this->db->single(); // Mengembalikan 1 baris objek/array, bukan list array
     }
 
