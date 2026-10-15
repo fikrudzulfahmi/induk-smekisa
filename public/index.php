@@ -27,6 +27,7 @@ require_once '../app/helpers/TokenHelper.php';
 require_once '../app/helpers/Flasher.php';
 
 require_once '../app/helpers/Auth.php'; // <-- TAMBAHKAN BARIS INI
+require_once '../app/helpers/ApiAuth.php'; // pengelola kunci API (X-API-KEY)
 require_once '../app/helpers/Tanggalindo.php';
 require_once '../app/helpers/Formatpenghasilan.php';
 require_once '../app/vendor/autoload.php';

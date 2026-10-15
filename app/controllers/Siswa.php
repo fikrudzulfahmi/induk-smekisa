@@ -1926,10 +1926,10 @@ class Siswa extends Controller
         }
         header('Content-Type: application/json');
 
-        $secretKey = "TUsmekisa1968";
+        // Kunci API dikelola terpusat: konstanta API_KEYS + helper ApiAuth.
         $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
 
-        if ($requestApiKey !== $secretKey) {
+        if (!ApiAuth::validKey($requestApiKey)) {
             http_response_code(401);
             echo json_encode(['status' => 'error', 'message' => 'API Key tidak valid.']);
             exit;
@@ -1960,10 +1960,10 @@ class Siswa extends Controller
         }
         header('Content-Type: application/json');
 
-        $secretKey = "TUsmekisa1968";
+        // Kunci API dikelola terpusat: konstanta API_KEYS + helper ApiAuth.
         $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
 
-        if ($requestApiKey !== $secretKey) {
+        if (!ApiAuth::validKey($requestApiKey)) {
             http_response_code(401);
             echo json_encode(['status' => 'error', 'message' => 'API Key tidak valid.']);
             exit;
@@ -2009,10 +2009,10 @@ class Siswa extends Controller
         header('Content-Type: application/json');
 
         // Proteksi API KEY
-        $secretKey = "TUsmekisa1968";
+        // Kunci API dikelola terpusat: konstanta API_KEYS + helper ApiAuth.
         $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
 
-        if ($requestApiKey !== $secretKey) {
+        if (!ApiAuth::validKey($requestApiKey)) {
             http_response_code(401);
             echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! API Key tidak valid.']);
             exit;
@@ -2054,10 +2054,10 @@ class Siswa extends Controller
         header('Content-Type: application/json');
 
         // Proteksi API KEY
-        $secretKey = "TUsmekisa1968";
+        // Kunci API dikelola terpusat: konstanta API_KEYS + helper ApiAuth.
         $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
 
-        if ($requestApiKey !== $secretKey) {
+        if (!ApiAuth::validKey($requestApiKey)) {
             http_response_code(401);
             echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! API Key tidak valid.']);
             exit;
@@ -2096,10 +2096,10 @@ class Siswa extends Controller
         header('Content-Type: application/json; charset=utf-8');
 
         // Proteksi API KEY
-        $secretKey = "TUsmekisa1968";
+        // Kunci API dikelola terpusat: konstanta API_KEYS + helper ApiAuth.
         $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
 
-        if ($requestApiKey !== $secretKey) {
+        if (!ApiAuth::validKey($requestApiKey)) {
             http_response_code(401);
             echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! API Key tidak valid.']);
             exit;
@@ -2152,10 +2152,10 @@ class Siswa extends Controller
         header('Content-Type: application/json; charset=utf-8');
 
         // 2. Proteksi API KEY
-        $secretKey = "TUsmekisa1968";
+        // Kunci API dikelola terpusat: konstanta API_KEYS + helper ApiAuth.
         $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
 
-        if ($requestApiKey !== $secretKey) {
+        if (!ApiAuth::validKey($requestApiKey)) {
             http_response_code(401); // Unauthorized
             echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! API Key tidak valid.']);
             exit;
@@ -2238,10 +2238,10 @@ class Siswa extends Controller
         header('Content-Type: application/json; charset=utf-8');
 
         // 2. Proteksi API KEY
-        $secretKey = "TUsmekisa1968";
+        // Kunci API dikelola terpusat: konstanta API_KEYS + helper ApiAuth.
         $requestApiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : '';
 
-        if ($requestApiKey !== $secretKey) {
+        if (!ApiAuth::validKey($requestApiKey)) {
             http_response_code(401); // Unauthorized
             echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! API Key tidak valid.']);
             exit;
