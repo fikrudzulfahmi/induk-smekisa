@@ -3,17 +3,22 @@
 class TokenHelper
 {
     // Kunci rahasia untuk enkripsi (Bisa Anda ganti dengan kalimat acak yang sulit ditebak)
-    private static $secret_key = 'SMEKISA68';
+    private static $secret_key = 'SMEKISA68'; // default lama; ganti lewat define('TOKEN_SECRET', '...') di config.php
     private static $encrypt_method = "AES-256-CBC";
 
     /**
      * Membuat Token yang Aman untuk URL
      */
+    private static function secret()
+    {
+        return (defined('TOKEN_SECRET') && TOKEN_SECRET !== '') ? TOKEN_SECRET : self::$secret_key;
+    }
+
     public static function generateToken($id)
     {
-        $key = hash('sha256', self::$secret_key);
+        $key = hash('sha256', self::secret());
         // Menggunakan 16 karakter pertama dari hash sebagai Initialization Vector (IV)
-        $iv = substr(hash('sha256', self::$secret_key), 0, 16);
+        $iv = substr(hash('sha256', self::secret()), 0, 16);
 
         // Enkripsi ID
         $output = openssl_encrypt($id, self::$encrypt_method, $key, 0, $iv);
@@ -39,8 +44,8 @@ class TokenHelper
             $base64 .= str_repeat('=', 4 - $padding);
         }
 
-        $key = hash('sha256', self::$secret_key);
-        $iv = substr(hash('sha256', self::$secret_key), 0, 16);
+        $key = hash('sha256', self::secret());
+        $iv = substr(hash('sha256', self::secret()), 0, 16);
 
         // Deskripsi token
         $decrypted_id = openssl_decrypt(base64_decode($base64), self::$encrypt_method, $key, 0, $iv);

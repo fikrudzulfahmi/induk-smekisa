@@ -1,2 +1,8 @@
 app/config/credentials.php
 app/config/config.php
+
+# data runtime / rahasia - jangan di-commit
+app/sessions/
+public/error_log
+error_log
+cronjob/temp_backup.sql
