@@ -32,12 +32,12 @@
         <?php Flasher::flash(); ?>
         <div class="card">
             <div class="card-header">
+                <a href="<?= BASEURL; ?>/rombel/exportPresensiExcelAll" class="btn btn-success">
+                    <i class="bi bi-file-earmark-excel"></i> Cetak Presensi Excel
+                </a>
                 <?php if (Auth::checkRole('admin')) : ?>
                     <a href="<?= BASEURL; ?>/rombel/cetakRekap" class="btn btn-success" target="_blank">
                         <i class="bi bi-file-earmark-pdf"></i> Cetak Rekap Rombel
-                    </a>
-                    <a href="<?= BASEURL; ?>/rombel/exportPresensiExcelAll" class="btn btn-success">
-                        <i class="bi bi-file-earmark-excel"></i> Cetak Presensi Excel
                     </a>
 
                     <a href="<?= BASEURL; ?>/rombel/tambah" class="btn btn-primary">Tambah Data</a>
