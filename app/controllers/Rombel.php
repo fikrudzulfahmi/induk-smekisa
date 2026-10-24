@@ -374,6 +374,186 @@ class Rombel extends Controller
         exit;
     }
 
+    public function exportPresensiExcelAll()
+    {
+        $rombelModel = $this->model('Rombel_model');
+        $siswaModel = $this->model('Siswa_model');
+        $tpAktif = $rombelModel->getActiveTahunPelajaran();
+        $tp = $tpAktif ? $tpAktif->tp : 'Data TP Tidak Ditemukan';
+
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
+        $usedTitles = [];
+        $count = 0;
+
+        foreach ($rombelModel->getAllRombel() as $r) {
+            $rombel = $rombelModel->getRombelByIdWithDetails($r->id_rombel);
+            $siswa_list = $siswaModel->getSiswaByRombelId($r->id_rombel);
+            if (!$rombel || empty($siswa_list)) {
+                continue;
+            }
+            $map_keluar = [];
+            foreach ($siswaModel->getMengundurkanDiriByRombel($r->id_rombel) as $md) {
+                $map_keluar[$md->id_induk] = $md->tgl_mengundurkan_diri;
+            }
+
+            // Nama sheet = nama kelas (maks 31 karakter, tanpa karakter terlarang, unik)
+            $title = trim(preg_replace('/[\\\\\/\?\*\[\]:]/', '-', $rombel->nama_rombel));
+            $title = mb_substr($title, 0, 31);
+            $base = $title;
+            $n = 2;
+            while (isset($usedTitles[mb_strtolower($title)])) {
+                $title = mb_substr($base, 0, 28) . ' ' . $n++;
+            }
+            $usedTitles[mb_strtolower($title)] = true;
+
+            $sheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($spreadsheet, $title);
+            $spreadsheet->addSheet($sheet);
+            $count++;
+            $this->buildPresensiSheet($sheet, $rombel, $siswa_list, $map_keluar, $tp);
+        }
+
+        if ($count === 0) {
+            $this->block();
+        }
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $this->logActivity('EXPORT', "Admin mengekspor Presensi Excel seluruh rombel ({$count} sheet).");
+
+        $filename = 'Daftar Hadir TP ' . str_replace('/', '-', $tp) . '.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        (new Xlsx($spreadsheet))->save('php://output');
+        exit;
+    }
+
+    private function buildPresensiSheet($sheet, $rombel, $siswa_list, $map_keluar, $tp)
+    {
+        $thin = Border::BORDER_THIN;
+        $thick = Border::BORDER_MEDIUM;
+        $center = ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER];
+
+        // Kolom: A No, B Nama, C JK, D NIS, E..S tgl 1-15, T tgl 31 / pemisah, U S, V I, W A
+        $sheet->getParent()->getDefaultStyle()->getFont()->setName('Arial')->setSize(9);
+
+        $sheet->mergeCells('A1:W1');
+        $sheet->setCellValue('A1', 'DAFTAR HADIR SISWA TAHUN PELAJARAN ' . $tp);
+        $sheet->mergeCells('A2:W2');
+        $sheet->setCellValue('A2', 'SEKOLAH MENENGAH KEJURUAN ISLAM 1 BLITAR');
+        $sheet->getStyle('A1:A2')->getFont()->setBold(true)->setSize(11);
+        $sheet->getStyle('A1:A2')->getAlignment()->applyFromArray($center);
+
+        $sheet->mergeCells('A4:L4');
+        $sheet->setCellValue('A4', 'Kelas : ' . $rombel->nama_rombel);
+        $sheet->mergeCells('M4:W4');
+        $sheet->setCellValue('M4', 'Bulan : ....................................');
+        $sheet->getStyle('A4:W4')->getFont()->setBold(true);
+        $sheet->getStyle('M4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+        // Header (2 baris)
+        foreach (['A' => 'No', 'B' => 'Nama', 'C' => 'JK', 'D' => 'NIS'] as $col => $label) {
+            $sheet->mergeCells("{$col}6:{$col}7");
+            $sheet->setCellValue("{$col}6", $label);
+        }
+        $cols = range('E', 'S');
+        foreach ($cols as $i => $col) {
+            $sheet->setCellValue($col . '6', $i + 1);
+        }
+        $cols2 = range('E', 'T');
+        foreach ($cols2 as $i => $col) {
+            $sheet->setCellValue($col . '7', $i + 16);
+        }
+        $sheet->mergeCells('U6:W6');
+        $sheet->setCellValue('U6', 'JUMLAH');
+        $sheet->setCellValue('U7', 'S');
+        $sheet->setCellValue('V7', 'I');
+        $sheet->setCellValue('W7', 'A');
+        $sheet->getStyle('A6:W7')->getFont()->setBold(true);
+        $sheet->getStyle('A6:W7')->getAlignment()->applyFromArray($center);
+        $sheet->getStyle('A6:W7')->getBorders()->getAllBorders()->setBorderStyle($thin);
+
+        $row = 8;
+        $no = 1;
+        $laki = 0;
+        $perempuan = 0;
+        foreach ($siswa_list as $s) {
+            $jk = ($s->jenis_kelamin == 'Perempuan') ? 'P' : 'L';
+            $jk == 'L' ? $laki++ : $perempuan++;
+            $keluar = isset($map_keluar[$s->id_induk]);
+
+            $sheet->setCellValue("A{$row}", $no++);
+            $sheet->setCellValue("B{$row}", $s->nama_siswa);
+            $sheet->setCellValue("C{$row}", $jk);
+            $sheet->setCellValueExplicit("D{$row}", substr((string)$s->no_induk, 0, 5), DataType::TYPE_STRING);
+
+            if ($keluar) {
+                $sheet->mergeCells("E{$row}:S{$row}");
+                $sheet->setCellValue("E{$row}", 'Keluar (' . tanggal_indo($map_keluar[$s->id_induk]) . ')');
+                $sheet->getStyle("E{$row}")->getFont()->setBold(true);
+                $sheet->getStyle("B{$row}")->getFont()->setBold(true)->getColor()->setRGB('FF0000');
+                $sheet->mergeCells("U{$row}:W{$row}");
+            }
+
+            $sheet->getStyle("A{$row}:W{$row}")->getBorders()->getAllBorders()->setBorderStyle($thin);
+            $sheet->getStyle("T{$row}")->getBorders()->getRight()->setBorderStyle($thick);
+            $sheet->getStyle("A{$row}:W{$row}")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+            foreach (['A', 'C', 'D'] as $c) {
+                $sheet->getStyle("{$c}{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            }
+            $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row++;
+        }
+        $lastRow = $row - 1;
+        $sheet->getStyle("T6:T7")->getBorders()->getRight()->setBorderStyle($thick);
+
+        // Ringkasan L/P
+        $row++;
+        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->setCellValue("A{$row}", 'Jumlah Laki-Laki');
+        $sheet->setCellValue("D{$row}", $laki);
+        $row++;
+        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->setCellValue("A{$row}", 'Jumlah Perempuan');
+        $sheet->setCellValue("D{$row}", $perempuan);
+        $sheet->getStyle("A" . ($row - 1) . ":D{$row}")->getBorders()->getAllBorders()->setBorderStyle($thin);
+        $sheet->getStyle("D" . ($row - 1) . ":D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Tanda tangan
+        $ttd = $row - 1;
+        $sheet->mergeCells("O{$ttd}:W{$ttd}");
+        $sheet->setCellValue("O{$ttd}", 'Blitar, ......................................');
+        $ttd += 1;
+        $sheet->mergeCells("O{$ttd}:W{$ttd}");
+        $sheet->setCellValue("O{$ttd}", 'Wali Kelas');
+        $ttd += 4;
+        $sheet->mergeCells("O{$ttd}:W{$ttd}");
+        $sheet->setCellValue("O{$ttd}", $rombel->nama_guru ?? '');
+        $sheet->getStyle("O{$ttd}")->getFont()->setBold(true)->setUnderline(true);
+
+        // Lebar kolom
+        $sheet->getColumnDimension('A')->setWidth(4);
+        $sheet->getColumnDimension('B')->setWidth(32);
+        $sheet->getColumnDimension('C')->setWidth(4);
+        $sheet->getColumnDimension('D')->setWidth(8);
+        foreach (range('E', 'T') as $c) {
+            $sheet->getColumnDimension($c)->setWidth(3.6);
+        }
+        foreach (['U', 'V', 'W'] as $c) {
+            $sheet->getColumnDimension($c)->setWidth(4);
+        }
+
+        // Pengaturan cetak: F4 portrait, muat 1 halaman lebar
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_FOLIO);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
+        $sheet->getPageSetup()->setHorizontalCentered(true);
+        $sheet->getPageMargins()->setTop(0.4)->setBottom(0.6)->setLeft(0.8)->setRight(0.3);
+        $sheet->getSheetView()->setZoomScale(100);
+        $sheet->getPageSetup()->setPrintArea("A1:W" . ($ttd + 1));
+    }
+
     public function exportAbsenExcel($id)
     {
         if (!is_numeric($id) || $id <= 0) {
