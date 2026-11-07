@@ -954,7 +954,8 @@ class Siswa_model
     public function getSiswaByRombel($id_rombel)
     {
         // Mengambil siswa yang masih aktif (id_status = 1) berdasarkan rombel
-        $this->db->query("SELECT id_induk, no_induk, nama_siswa 
+        // Kolom lengkap untuk API ekstra: nisn, jenis_kelamin, tgl_lhr
+        $this->db->query("SELECT id_induk, no_induk, nisn, nama_siswa, jenis_kelamin, tgl_lhr
                           FROM data_induk 
                           WHERE rombel = :id_rombel AND id_status = 1 
                           ORDER BY nama_siswa ASC");

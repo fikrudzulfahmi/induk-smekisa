@@ -134,6 +134,20 @@ class Rombel_model
         return $this->db->resultSet();
     }
 
+    /**
+     * Cari rombel berdasarkan nama (exact match, case-insensitive).
+     * Untuk endpoint API sinkronisasi ekstra.
+     * 
+     * @param string $nama
+     * @return object|false
+     */
+    public function getRombelByNama($nama)
+    {
+        $this->db->query("SELECT * FROM rombel WHERE LOWER(nama_rombel) = LOWER(:nama) LIMIT 1");
+        $this->db->bind('nama', $nama);
+        return $this->db->single();
+    }
+
     public function getListJurusan()
     {
         $this->db->query("SELECT DISTINCT jurusan FROM jurusan ORDER BY jurusan");
